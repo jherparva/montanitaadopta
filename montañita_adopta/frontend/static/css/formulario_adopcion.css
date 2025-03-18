@@ -1,0 +1,600 @@
+/* Variables para colores y estilos reutilizables */
+:root {
+    --color-primary: #007bff;
+    --color-primary-dark: #0056b3;
+    --color-secondary: #ff6b6b;
+    --color-text: #333;
+    --color-title: #cf0707;
+    --color-background: #f4f4f4;
+    --color-white: #fff;
+    --color-card-bg: rgba(255, 255, 255, 0.95);
+    --color-paw-dog: rgba(0, 123, 255, 0.25);
+    --color-paw-cat: rgba(255, 87, 51, 0.2);
+    --shadow-soft: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 255, 0, 0.6);
+    --shadow-card: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --border-radius: 8px;
+    --border-radius-small: 4px;
+    --transition: all 0.3s ease;
+}
+
+body.adopcion-page {
+    background-color: var(--color-background);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow-x: hidden;
+    color: var(--color-text);
+    font-family: 'Roboto', sans-serif;
+}
+
+@font-face {
+    font-family: 'Blueberry';
+    src: url('../imagenes/Blueberry\ .ttf') format('truetype');
+    font-display: swap;
+    padding-top: 7%;
+}
+
+/* Banner de adopción con imagen inspiradora - Reducido */
+.adopcion-banner {
+    position: relative;
+    height: 200px;
+    background-image: url('../imagenes/banner-adopcion.jpg');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 30px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    padding-top: 3%;
+    padding-bottom: 7%;
+}
+
+.banner-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+
+.banner-overlay h1 {
+    font-family: 'Blueberry', cursive;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 1s ease-in-out;
+}
+
+.banner-overlay p {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+/* Contenedor principal con decoración - Más pequeño */
+.adopcion-container {
+    max-width: 800px;
+    margin: 30px auto 60px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    z-index: 1;
+}
+
+/* Título principal - Más pequeño */
+.main-title {
+    font-family: 'Blueberry', cursive;
+    text-align: center;
+    color: var(--color-title);
+    margin-bottom: 20px;
+    font-size: 36px;
+    font-weight: 600;
+    position: relative;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.main-title::after {
+    content: "♥";
+    position: absolute;
+    font-size: 18px;
+    color: var(--color-title);
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Tarjeta de información de mascota - Más compacta */
+.mascota-info-card {
+    display: flex;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    animation: fadeIn 1s ease-out;
+}
+
+.mascota-info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.mascota-img-container {
+    flex: 0 0 35%;
+    overflow: hidden;
+}
+
+.mascota-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.mascota-info-card:hover .mascota-img {
+    transform: scale(1.05);
+}
+
+.mascota-details {
+    flex: 1;
+    padding: 15px;
+    position: relative;
+}
+
+.mascota-details h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 10px;
+}
+
+.mascota-details p {
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.mascota-details i {
+    margin-right: 8px;
+    color: var(--color-secondary);
+}
+
+.mascota-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--color-secondary);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+/* Tarjetas del formulario - Más pequeñas */
+.form-cards {
+    margin-bottom: 20px;
+}
+
+.form-card {
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 1.2s ease-out;
+}
+
+.form-card:hover {
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.form-card:hover .card-icon {
+    transform: rotate(10deg);
+}
+
+.large-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 1.6rem;
+}
+
+.card-title {
+    color: var(--color-primary-dark);
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+    font-size: 1.2rem;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+/* Estilos mejorados para inputs y selects - Más pequeños */
+.form-card label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--color-text);
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.form-card input:focus + label,
+.form-card select:focus + label,
+.form-card textarea:focus + label {
+    color: var(--color-primary);
+}
+
+.form-card input:not([type="radio"]),
+.form-card textarea,
+.form-card select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius-small);
+    box-sizing: border-box;
+    transition: var(--transition);
+    background-color: #fafafa;
+    font-size: 0.9rem;
+}
+
+.form-card input:focus,
+.form-card textarea:focus,
+.form-card select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+    background-color: white;
+}
+
+.form-card textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Tarjeta de compromiso - Más compacta */
+.commitment-card {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(to right, rgba(0, 123, 255, 0.05), rgba(0, 123, 255, 0.1));
+}
+
+.commitment-text {
+    margin: 15px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: left;
+}
+
+/* Radio buttons personalizados - Más pequeños */
+.radio-options {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    gap: 30px;
+}
+
+.radio-container {
+    display: block;
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    user-select: none;
+}
+
+.radio-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.radio-container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+.radio-container input:checked ~ .checkmark {
+    background-color: var(--color-primary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.radio-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.radio-container .checkmark:after {
+    top: 7px;
+    left: 7px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+}
+
+/* Botón mejorado - Más pequeño */
+.submit-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 12px 15px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.submit-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+.submit-btn i {
+    margin-left: 8px;
+    position: relative;
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.submit-btn:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+.submit-btn:hover i {
+    transform: rotate(15deg);
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-primary-dark));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.submit-btn:hover::before {
+    opacity: 1;
+}
+
+/* Sección de video - Más compacta */
+.video-section {
+    margin-top: 30px;
+    border-top: 1px dashed #ddd;
+    padding-top: 25px;
+    animation: fadeIn 1.5s ease-out;
+}
+
+.video-title {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--color-primary-dark);
+    font-size: 1.4rem;
+}
+
+.video-title i {
+    color: var(--color-secondary);
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.video-container {
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+.video-container video {
+    width: 100%;
+    display: block;
+    border-radius: var(--border-radius);
+}
+
+.video-caption {
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Huellas de perro - Más pequeñas */
+.paw-dog {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background-color: var(--color-paw-dog);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    z-index: -1;
+}
+
+.paw-dog::before,
+.paw-dog::after {
+    content: "";
+    position: absolute;
+    background-color: var(--color-paw-dog);
+    border-radius: 50%;
+}
+
+.paw-dog::before {
+    width: 12px;
+    height: 12px;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.paw-dog::after {
+    width: 12px;
+    height: 12px;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pawDogAnimation {
+    0% { transform: translateY(0) rotate(var(--rotation)); }
+    50% { transform: translateY(-3px) rotate(var(--rotation)); }
+    100% { transform: translateY(0) rotate(var(--rotation)); }
+}
+
+@keyframes pawCatAnimation {
+    0% { transform: translateY(0) rotate(var(--rotation)); }
+    50% { transform: translateY(-2px) rotate(calc(var(--rotation) + 5deg)); }
+    100% { transform: translateY(0) rotate(var(--rotation)); }
+}
+
+/* Responsividad mejorada */
+@media (max-width: 992px) {
+    .adopcion-container {
+        max-width: 90%;
+        padding: 20px;
+    }
+    
+    .banner-overlay h1 {
+        font-size: 2.2rem;
+    }
+    
+    .banner-overlay p {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .adopcion-banner {
+        height: 180px;
+    }
+    
+    .banner-overlay h1 {
+        font-size: 1.8rem;
+    }
+    
+    .mascota-info-card {
+        flex-direction: column;
+    }
+    
+    .mascota-img-container {
+        flex: 0 0 180px;
+    }
+    
+    .main-title {
+        font-size: 32px;
+    }
+    
+    .radio-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .submit-btn {
+        padding: 10px 12px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .adopcion-container {
+        margin: 20px auto 40px;
+        padding: 12px;
+    }
+    
+    .banner-overlay h1 {
+        font-size: 1.4rem;
+    }
+    
+    .form-card {
+        padding: 12px;
+    }
+    
+    .card-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .large-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+}

@@ -1,0 +1,203 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/recuperar_contraseña.css') }}">
+    
+    
+<!-- Modal para Login -->
+<div id="loginModal" class="modal">
+    <div class="modal-content login-container">
+        <span class="close" onclick="closeModal('loginModal')">&times;</span>
+        <h2>Iniciar Sesión</h2>
+        <form id="login-form">
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" id="login-email" name="correo" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="login-password" name="password" required>
+
+            <button type="submit">Ingresar</button>
+            <a href="#" class="forgot-password" onclick="openModal('resetPasswordModal')">Olvidé mi contraseña</a>
+
+            <!-- Botón de Google -->
+            <div id="g_id_onload"
+                data-client_id="373637505294-0havcaleq8bobimbts8353etmn0ahb7e.apps.googleusercontent.com"
+                data-context="signin"
+                data-ux_mode="popup"
+                data-callback="handleCredentialResponse"
+                data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+
+            <!-- Botón de Facebook (solo estructura, configuración en JavaScript) -->
+            <button type="button" class="social-login facebook">Entrar con Facebook</button>
+        </form>
+        <div id="login-alert" style="color: red; display: none;"></div>
+    </div>
+</div>
+
+<!-- Modal para Registro -->
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('registerModal')">&times;</span>
+        <div class="registro-container">
+            <h2>Registrarse</h2>
+            <form id="register-form">
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="nombre">Nombre:</label>
+                            <input type="text" id="register-nombres" name="nombre" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="codigo-postal">Código Postal:</label>
+                            <input type="text" id="register-codigo-postal" name="codigo_postal" required autocomplete="postal-code">
+                        </div>
+                        <div class="form-group">
+                            <label for="prefijo">Prefijo:</label>
+                            <input type="text" id="register-prefijo" name="prefijo" required autocomplete="tel-country-code">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+                            <input type="date" id="register-fecha-nacimiento" name="fecha_nacimiento" required>
+                        </div>                            
+                        <div class="form-group">
+                            <label for="password">Contraseña:</label>
+                            <input type="password" id="register-password" name="contrasena" required autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico:</label>
+                            <input type="email" id="register-email" name="correo_electronico" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="direccion">Dirección:</label>
+                            <input type="text" id="register-direccion" name="direccion" required autocomplete="street-address">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefono">Teléfono:</label>
+                            <input type="text" id="register-telefono" name="telefono" required autocomplete="tel">
+                        </div>
+                        <div class="form-group">
+                            <label for="pais">País:</label>
+                            <input type="text" id="register-pais" name="pais" required autocomplete="country">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirmar Contraseña:</label>
+                            <input type="password" id="register-confirm-password" name="confirmar_contrasena" required autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+                <div class="botones-container">
+                    <button type="submit">Registrarse</button>
+                    <button type="button" class="social-login google">Registrarse con Google</button>
+                    <button type="button" class="social-login facebook">Registrarse con Facebook</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Configuración -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content registro-container">
+        <span class="close" onclick="closeModal('settingsModal')">&times;</span>
+        <h2>Configuración de Usuario</h2>
+        <form id="settings-form">
+            <input type="hidden" name="id" id="usuario-id">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="correo_electronico">Correo Electrónico:</label>
+                <input type="email" id="correo_electronico" name="correo_electronico" required>
+            </div>
+            <div class="form-group">
+                <label for="codigo_postal">Código Postal:</label>
+                <input type="text" id="codigo_postal" name="codigo_postal" required>
+            </div>
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" required>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" id="telefono" name="telefono" required>
+            </div>
+            <div class="form-group">
+                <label for="contrasena">Nueva Contraseña:</label>
+                <input type="password" id="contrasena" name="contrasena">
+            </div>
+            <div class="form-group">
+                <label for="confirmar_contrasena">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="confirmar_contrasena" name="confirmar_contrasena">
+            </div>
+            <button type="submit">Actualizar Información</button>
+            <button type="button" id="delete-account">Eliminar Cuenta</button>
+        </form>
+        <div id="settings-alert" style="color: red; display: none;"></div>
+    </div>
+</div>
+
+
+<!-- Modal para Recuperación de Contraseña -->
+<div id="resetPasswordModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('resetPasswordModal')">&times;</span>
+        <h2>Recuperar Contraseña</h2>
+        <form id="reset-password-form">
+            <label for="reset-password-email">Correo Electrónico:</label>
+            <input type="email" id="reset-password-email" name="reset-password-email" required>
+            <button type="submit">Enviar Código de Recuperación</button>
+        </form>
+        <div id="reset-password-alert" style="color: red; display: none;"></div>
+    </div>
+</div>
+
+<!-- Modal para ingreso de código de recuperación -->
+<div id="verifyCodeModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('verifyCodeModal')">&times;</span>
+        <h2>Verificar Código de Recuperación</h2>
+        <form id="verify-code-form">
+            <div class="form-group">
+                <label for="verify-email">Correo Electrónico:</label>
+                <input type="email" id="verify-email" name="verify-email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="recovery-code">Código de Recuperación:</label>
+                <input type="text" id="recovery-code" name="recovery-code" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="verify-new-password">Nueva Contraseña:</label>
+                <input type="password" id="verify-new-password" name="verify-new-password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="verify-confirm-password">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="verify-confirm-password" name="verify-confirm-password" required>
+            </div>
+            
+            <div class="password-requirements">
+                <p>La contraseña debe contener:</p>
+                <ul>
+                    <li>Al menos 8 caracteres</li>
+                    <li>Una letra mayúscula</li>
+                    <li>Una letra minúscula</li>
+                    <li>Un número</li>
+                </ul>
+            </div>
+            
+            <button type="submit">Restablecer Contraseña</button>
+        </form>
+        <div id="verify-code-alert" style="color: red; display: none;"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://connect.facebook.net/en_US/sdk.js" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{{ url_for('static', filename='js/restablecer_contraseña.js') }}"></script>

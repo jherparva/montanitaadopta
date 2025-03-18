@@ -1,0 +1,97 @@
+<!-- templates/menu.html -->
+<div class="content">
+    <nav>
+        <input type="checkbox" id="check">
+        <label for="check" class="checkbtn">
+            <i class="fa-solid fa-bars"></i>
+        </label>
+        <a href="#" class="enlace">
+            <div class="logo-container">
+                <img src="/static/imagenes/OIG-ybw7TnotO-transformed1-removebg.png" alt="Logo Montañita" class="logo">
+                <div class="brand-name">
+                    <div class="nombre_1">MONTAÑITA</div>
+                    <div class="huella">
+                        <img src="/static/imagenes/huella de perro-Photoroom.png-Photoroom.png" alt="Huella de perro">
+                    </div>
+                    <div class="nombre_2">ADOPTA</div>
+                </div>
+            </div>
+        </a>
+        <ul class="main-menu">
+            <!-- Selector de idiomas mejorado -->
+            <li class="has-submenu language-menu">
+                <a href="#" class="menu-link language-selector">
+                    <i class="fa-solid fa-globe"></i> ES <i class="fa-solid fa-chevron-down"></i>
+                </a>
+                <ul class="submenu language-submenu">
+                    <li><a href="?lang=es" class="submenu-link"><i class="flag-icon flag-icon-es"></i> Español</a></li>
+                    <li><a href="?lang=en" class="submenu-link"><i class="flag-icon flag-icon-gb"></i> English</a></li>
+                    <li><a href="?lang=fr" class="submenu-link"><i class="flag-icon flag-icon-fr"></i> Français</a></li>
+                </ul>
+            </li>
+            <li><a href="/" class="menu-link"><i class="fa-solid fa-home"></i> INICIO</a></li>
+            <li><a href="/contacto" class="menu-link"><i class="fa-solid fa-envelope"></i> CONTACTO</a></li>
+            <li class="has-submenu">
+                <a href="#" class="menu-link"><i class="fa-solid fa-paw"></i> ADOPTA <i class="fa-solid fa-chevron-down"></i></a>
+                <ul class="submenu">
+                    <li><a href="/adopcion" class="submenu-link">Adopciones</a></li>
+                    <li><a href="/historias_exito" class="submenu-link">Historias felices</a></li>
+                    <li><a href="/donaciones" class="submenu-link">Donaciones</a></li>
+                    <li><a href="/voluntario" class="submenu-link">Voluntario</a></li>
+                </ul>
+            </li>
+            <li id="user-menu" class="has-submenu" style="display: none;">
+                <a href="#" id="user-name" class="menu-link user-profile-link">
+                    <div class="profile-photo-container">
+                        <img id="profile-photo" src="/static/imagenes/default-profile.png" alt="Foto de perfil">
+                    </div>
+                    <span id="username-text"></span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </a>
+                <ul class="submenu user-submenu">
+                    <li><a href="#" onclick="openModal('settingsModal')" class="submenu-link"><i class="fa-solid fa-gear"></i> Configuración</a></li>
+                    <li><a href="#" onclick="openPhotoModal()" class="submenu-link"><i class="fa-solid fa-camera"></i> Cambiar foto</a></li>
+                    <li><a href="#" id="logout-button" class="submenu-link"><i class="fa-solid fa-sign-out-alt"></i> Cerrar sesión</a></li>
+                </ul>
+            </li>
+            <li id="login-menu" class="has-submenu" style="display: none;">
+                <a href="#" class="menu-link login-link"><i class="fa-solid fa-user"></i> LOGIN <i class="fa-solid fa-chevron-down"></i></a>
+                <ul class="submenu login-submenu">
+                    <li><a href="#" onclick="openModal('loginModal')" class="submenu-link"><i class="fa-solid fa-sign-in-alt"></i> Iniciar sesión</a></li>
+                    <li><a href="#" onclick="openModal('registerModal')" class="submenu-link"><i class="fa-solid fa-user-plus"></i> Registrarse</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Modal para cambiar la foto de perfil (renamed classes to match CSS) -->
+<div id="photoModal" class="photo-profile-modal">
+    <div class="photo-modal-content">
+        <div class="photo-modal-header">
+            <h2>Cambiar foto de perfil</h2>
+            <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+        </div>
+        <div class="photo-upload-container">
+            <div class="current-photo">
+                <img id="current-profile-photo" src="/static/imagenes/default-profile.png" alt="Foto actual">
+            </div>
+            <form id="profile-photo-form" enctype="multipart/form-data">
+                <div class="file-input-container">
+                    <label for="profile-photo-upload" class="file-upload-button">
+                        <i class="fa-solid fa-upload"></i> Seleccionar imagen
+                    </label>
+                    <input type="file" id="profile-photo-upload" name="photo" accept="image/*">
+                </div>
+                <div class="preview-container">
+                    <img id="photo-preview" src="#" alt="Vista previa" style="display: none;">
+                </div>
+                <button type="submit" class="upload-button">
+                    <i class="fa-solid fa-save"></i> Guardar cambios
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

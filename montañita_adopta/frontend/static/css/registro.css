@@ -1,0 +1,291 @@
+/* Estilos del modal */
+.modal {
+    display: none; /* Ocultamos el modal por defecto */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 80%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 10px;
+
+    /* Usamos flexbox para centrar el modal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Estilo para la "X" de cierre */
+.close {
+    color: white;
+    background-color: #4fd95a; /* Color de fondo */
+    border-radius: 50%; /* Bordes redondeados */
+    width: 40px; /* Tamaño del botón */
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px; /* Tamaño de la "X" */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Efectos de transición */
+}
+
+/* Efecto al pasar el mouse */
+.close:hover {
+    background-color: #f10707; /* Cambia a un color más claro */
+    transform: scale(1.1); /* Agrandamiento */
+}
+
+/* Efecto al hacer clic */
+.close:active {
+    transform: scale(0.95); /* Hace que se encoja un poco */
+}
+
+/* Estilo al hacer focus en la "X" */
+.close:focus {
+    outline: none; /* Eliminar el borde cuando se hace clic */
+}
+
+
+
+/* Adaptación de los estilos del formulario */
+.registro-container {
+    max-width: 600px; /* Ancho reducido */
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #90ee90;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 255, 0, 0.6); /* Sombra verde luminosa */
+}
+
+.registro-container h2 {
+    font-family: 'Blueberry';
+    text-align: center;
+    color: #cf0707;
+    font-size: 50px;
+    margin-bottom: 8px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-col {
+    flex: 1;
+    max-width: 48%;
+}
+
+.form-group label {
+    font-weight: bold;
+}
+
+.registro-container input[type="text"],
+.registro-container input[type="email"],
+.registro-container input[type="password"],
+.registro-container input[type="tel"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.registro-container select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.botones-container {
+    display: flex; /* Usar flexbox para apilar los botones */
+    flex-direction: column; /* Apilar verticalmente */
+    align-items: center; /* Centrar horizontalmente */
+    width: 100%; /* Asegura que el contenedor ocupe el ancho completo */
+}
+
+.registro-container button[type="submit"],
+.social-login {
+    width: 80%;
+    max-width: 220px;
+    margin: 0 auto 15px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+
+}
+
+.registro-container button[type="submit"] {
+    background-color: #27b80b;
+    color: #fff;
+}
+
+.registro-container button[type="submit"]:hover {
+    background-color: #126102;
+}
+
+.registro-container input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 2px solid #000000; /* Borde con un grosor y color similar a los demás */
+    background-color: white;
+    font-size: 16px;
+    -webkit-appearance: none; /* Elimina el estilo predeterminado de los navegadores en iOS/Safari */
+    -moz-appearance: none; /* Para Firefox */
+    appearance: none; /* Para otros navegadores */
+}
+
+.registro-container input[type="date"]:focus {
+    border-color: #cf0707; /* Color del borde cuando el campo está enfocado, similar al resto de los campos */
+    box-shadow: 0 0 5px rgba(207, 7, 7, 0.5); /* Añadir un pequeño resplandor para resaltar el campo */
+}
+
+.social-login.google {
+    background-color: #db4437;
+    color: #fff;
+}
+
+.social-login.facebook {
+    background-color: #3b5998;
+    color: #fff;
+}
+
+.social-login:hover {
+    transform: translateY(-2px);
+}
+
+.social-login:active {
+    transform: translateY(1px);
+}
+
+#delete-account {
+    width: 100%;
+    padding: 12px;
+    background-color: #e74c3c; /* Color de fondo rojo brillante */
+    color: #fff;
+    border: none;
+    border-radius: 6px; /* Bordes redondeados */
+    font-size: 16px; /* Tamaño de la fuente */
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Transiciones suaves */
+    margin-top: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil para darle un efecto de profundidad */
+}
+
+#delete-account:hover {
+    background-color: #c0392b; /* Fondo más oscuro al pasar el ratón */
+    transform: translateY(-2px); /* Efecto de elevación */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Aumentar la sombra al pasar el ratón */
+}
+
+#delete-account:active {
+    background-color: #e74c3c; /* Mantener el fondo rojo cuando se hace clic */
+    transform: translateY(1px); /* Efecto de presión */
+}
+
+/* Modal de Configuración de Usuario */
+#settingsModal .modal-content {
+    width: 500px; /* Aumentar la reducción en el ancho */
+    padding: 15px; /* Menos padding en el contenido */
+    font-size: 13px; /* Reducir el tamaño de la fuente para todo el formulario */
+}
+
+/* Título del modal */
+#settingsModal h2 {
+    font-size: 32px; /* Tamaño más pequeño para el título */
+    margin-bottom: 12px; /* Menos espacio debajo del título */
+    text-align: center;
+}
+
+/* Formulario */
+#settingsModal form {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Reducir el espacio entre los elementos del formulario */
+}
+
+/* Estilos para las etiquetas */
+#settingsModal label {
+    font-size: 20px; /* Reducir tamaño de fuente */
+    margin-bottom: 3px; /* Menos espacio debajo de las etiquetas */
+}
+
+/* Estilos para los campos de entrada */
+#settingsModal input {
+    padding: 6px; /* Menos padding en los inputs */
+    font-size: 13px; /* Reducir el tamaño de la fuente en los inputs */
+    margin-bottom: 8px; /* Reducir el espacio entre campos */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Contenedor para los botones de Actualizar y Eliminar */
+#settingsModal .buttons-container {
+    display: flex;
+    justify-content: space-between; /* Espacio entre los botones */
+    gap: 10px; /* Espacio entre los botones */
+}
+
+/* Estilos para los botones dentro del contenedor */
+#settingsModal .buttons-container button {
+    width: 48%; /* Asegura que los botones tengan el mismo tamaño y estén uno al lado del otro */
+    padding: 12px; /* Más padding para hacerlos más visibles */
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    margin: 0; /* Elimina el margen entre los botones */
+    border-radius: 6px; /* Bordes redondeados */
+}
+
+/* Botón de Eliminar Cuenta */
+#settingsModal #delete-account {
+    background-color: #dc3545; /* Rojo */
+    color: white;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+#settingsModal #delete-account:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+#settingsModal #delete-account:active {
+    transform: translateY(1px);
+}
+
+/* Botón de Actualizar Información */
+#settingsModal button[type="submit"] {
+    background-color: #28a745; /* Verde */
+    color: white;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+#settingsModal button[type="submit"]:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+#settingsModal button[type="submit"]:active {
+    transform: translateY(1px);
+}

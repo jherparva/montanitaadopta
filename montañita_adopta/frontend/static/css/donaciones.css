@@ -1,0 +1,467 @@
+:root {
+    --secondary-color: #ff6600;
+    --accent-color: #f0f8ff;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --background-light: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor principal para encapsular todos los estilos */
+.donations-page {
+    /* Estilos base para resetear cualquier influencia externa */
+    color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    padding-top: 80px; /* Match exactly the height of your nav bar */
+    margin-top: 0;
+}
+
+/* Hero Section */
+.donations-page .hero-section {
+    background: linear-gradient(rgba(59, 59, 59, 0.541), rgba(41, 41, 41, 0.726)), url('/static/imagenes/hero-donation.jpg');
+    background-size: cover;
+    background-position: center;
+    color: var(--text-light);
+    padding: 80px 0;
+    text-align: center;
+}
+
+.donations-page .hero-section h1 {
+    font-family: 'Blueberry', sans-serif;
+    font-size: 3rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #e01e1e;
+}
+
+.donations-page .hero-section p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.donations-page .urgent-message {
+    background-color: rgba(255, 100, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: inline-block;
+    margin-bottom: 20px;
+    font-weight: 600;
+    animation: donation-pulse 2s infinite;
+}
+
+.donations-page .hero-buttons {
+    color: #f9f9f9;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Stats Section */
+.donations-page .stats-section {
+    background: linear-gradient(90deg, rgba(16, 134, 6, 0.9), rgba(9, 99, 4, 0.9)), url('/static/imagenes/stats-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: var(--text-light);
+    padding: 40px 0;
+}
+
+.donations-page .stats-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.donations-page .stat-item {
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+    padding: 20px;
+}
+
+.donations-page .stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.donations-page .stat-label {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Section Headers */
+.donations-page .section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.donations-page .section-header h2 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.donations-page .section-header p {
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-dark);
+}
+
+.donations-page .paw-divider {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 20px;
+}
+
+.donations-page .paw-divider i {
+    color: #e01e1e;
+    font-size: 18px;
+}
+
+/* Payment Methods */
+.donations-page .about-section {
+    background-color: var(--background-light);
+    padding: 80px 0;
+}
+
+.donations-page .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.donations-page .about-card {
+    background-color: var(--text-light);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 20px var(--shadow-color);
+    transition: all 0.3s ease;
+    text-align: center;
+    cursor: pointer;
+}
+
+.donations-page .about-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.donations-page .about-icon {
+    font-size: 2.5rem;
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+
+.donations-page .about-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.donations-page .about-card p {
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.donations-page .payment-number {
+    font-weight: 700;
+    font-size: 1.2rem;
+    background-color: var(--accent-color);
+    padding: 8px 15px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.donations-page .qr-code {
+    max-width: 150px;
+    margin-top: 15px;
+}
+
+/* Food Donation Section */
+.donations-page .testimonials-section {
+    background-color: var(--text-light);
+    padding: 80px 0;
+}
+
+.donations-page .testimonial-card {
+    background-color: var(--background-light);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 20px var(--shadow-color);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.donations-page .donation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.donations-page .form-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.donations-page .form-control, 
+.donations-page .form-select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+}
+
+.donations-page .delivery-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.donations-page .delivery-option {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.donations-page .delivery-option.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+.donations-page .donate-btn {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.donations-page .donate-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+}
+
+/* CTA Section */
+.donations-page .cta-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/imagenes/cta-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: var(--text-light);
+    padding: 80px 0;
+    text-align: center;
+}
+
+.donations-page .cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.donations-page .cta-section p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.donations-page .cta-section .btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Estilo para el botón de enviar evidencia */
+.donations-page .send-evidence {
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donations-page .send-evidence:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para el mapa del refugio */
+.donations-page .map-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para tarjetas de información */
+.donations-page .card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.donations-page .card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Estilo para la animación de WhatsApp */
+@keyframes whatsapp-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.whatsapp-animation {
+    animation: whatsapp-bounce 1s ease infinite;
+}
+
+/* Estilo para el modal de WhatsApp */
+.whatsapp-modal .modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.whatsapp-modal .modal-header {
+    background-color: #25D366;
+    color: white;
+}
+
+.whatsapp-modal .whatsapp-logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+}
+
+.whatsapp-modal .modal-footer {
+    border-top: none;
+}
+
+/* Estilo para las pestañas de ubicación */
+.donations-page .location-tabs {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.donations-page .location-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.donations-page .location-tab:first-child {
+    border-radius: 5px 0 0 5px;
+}
+
+.donations-page .location-tab:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.donations-page .location-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Estilo responsive para móviles */
+@media (max-width: 576px) {
+    .donations-page .card-body {
+        padding: 15px;
+    }
+    
+    .donations-page .location-tabs {
+        flex-direction: column;
+    }
+    
+    .donations-page .location-tab {
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .donations-page .location-tab:first-child,
+    .donations-page .location-tab:last-child {
+        border-radius: 5px;
+    }
+}
+
+
+/* Animations - Renamed to avoid conflicts */
+@keyframes donation-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .donations-page .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .donations-page .hero-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .donations-page .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .donations-page .section-header h2 {
+        font-size: 2rem;
+    }
+    
+    .donations-page .about-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .donations-page .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .donations-page .stat-number {
+        font-size: 2rem;
+    }
+    
+    .donations-page .section-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .donations-page .payment-number {
+        font-size: 1rem;
+    }
+}

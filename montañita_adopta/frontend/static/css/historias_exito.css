@@ -1,0 +1,589 @@
+/* Variables para colores y estilos consistentes con el sitio principal */
+:root {
+    --primary-color: #108606;
+    --primary-dark: #096304;
+    --secondary-color: #ff3e00;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --background-light: #f9f9f9;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    color: var(--text-dark);
+    line-height: 1.6;
+    background-color: var(--background-light);
+}
+
+/* Sección principal de historias de éxito */
+.success-stories-section {
+    padding: 80px 0;
+    background-color: #fff;
+}
+
+.success-stories-section h2 {
+    font-family: 'Blueberry', sans-serif;
+    text-align: center;
+    color: var(--secondary-color);
+    margin-bottom: 40px;
+    font-size: 80px;
+    font-weight: bold;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+    padding-top: 7%;
+}
+
+.success-stories-section h2:hover {
+    transform: scale(1.05);
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Sección contenedor de formularios y medios */
+.container-forms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Sección para enviar historia */
+.submit-story {
+    flex: 1;
+    min-width: 300px;
+    background-color: rgba(255, 255, 255, 0.35);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.submit-story:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.submit-story h3 {
+    color: var(--primary-color);
+    font-size: 28px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.submit-story form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.submit-story form div {
+    margin-bottom: 15px;
+}
+
+.submit-story label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.submit-story input,
+.submit-story textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.submit-story input:focus,
+.submit-story textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(16, 134, 6, 0.2);
+    outline: none;
+    transform: scale(1.01);
+}
+
+.submit-story textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.submit-story button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    border: none;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: auto;
+    margin: 10px auto 0;
+    display: block;
+    box-shadow: 0 4px 10px rgba(16, 134, 6, 0.3);
+}
+
+.submit-story button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(16, 134, 6, 0.4);
+}
+
+/* Sección de medios - Videos */
+.media-section {
+    flex: 1;
+    min-width: 300px;
+    background-color: rgba(255, 255, 255, 0.35);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+    animation: fadeIn 1s ease-out;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.media-section:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.media-section h3 {
+    font-size: 28px;
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.video-gallery {
+    margin-top: 20px;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.video-gallery video {
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.video-gallery:hover video {
+    transform: scale(1.02);
+}
+
+/* Sección de historias destacadas */
+.featured-stories {
+    margin-top: 60px;
+    padding-top: 40px;
+}
+
+.featured-stories h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 36px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.stories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+}
+
+.story-card {
+    flex: 0 0 calc(33.333% - 20px);
+    min-width: 280px;
+    background-color: rgba(255, 255, 255, 0.35);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.story-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.story-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.story-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.story-card:hover .story-image img {
+    transform: scale(1.1);
+}
+
+.story-content {
+    padding: 20px;
+}
+
+.story-content h4 {
+    margin: 0 0 15px;
+    font-size: 22px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.story-content p {
+    color: var(--text-dark);
+    font-size: 16px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.story-card:hover .story-content p {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.story-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: rgba(240, 240, 240, 0.6);
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.story-date {
+    font-style: italic;
+}
+
+.story-author {
+    font-weight: 500;
+}
+
+/* Botón para cargar más historias */
+.load-more {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 40px auto 0;
+    width: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.load-more:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(16, 134, 6, 0.3);
+}
+
+/* Testimonios destacados */
+.testimonials {
+    margin-top: 70px;
+    background: linear-gradient(135deg, rgba(16, 134, 6, 0.1) 0%, rgba(9, 99, 4, 0.05) 100%);
+    padding: 50px 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.testimonials:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+}
+
+.testimonials h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 36px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-carousel {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.testimonial-item {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 30px;
+    border-radius: 15px;
+    margin: 0 auto;
+    max-width: 700px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.testimonial-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.testimonial-item:before {
+    content: '\201C';
+    font-size: 80px;
+    color: rgba(16, 134, 6, 0.1);
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-family: Georgia, serif;
+}
+
+.testimonial-content {
+    font-style: italic;
+    line-height: 1.8;
+    color: var(--text-dark);
+    font-size: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.testimonial-author {
+    margin-top: 20px;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: right;
+    font-size: 16px;
+}
+
+/* Estilos para los botones de selección de video */
+.video-selector {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.video-btn {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    padding: 10px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.video-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.video-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Estilos para el llamado a la acción de adopción */
+.adoption-cta {
+    background: linear-gradient(135deg, rgba(16, 134, 6, 0.1) 0%, rgba(255, 62, 0, 0.05) 100%);
+    padding: 50px 30px;
+    text-align: center;
+    border-radius: 15px;
+    margin: 60px auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.adoption-cta:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.adoption-cta h3 {
+    color: var(--secondary-color);
+    font-size: 32px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.cta-text {
+    font-size: 18px;
+    max-width: 700px;
+    margin: 0 auto 30px;
+    line-height: 1.8;
+    color: var(--text-dark);
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-adoption {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(16, 134, 6, 0.3);
+    display: inline-block;
+}
+
+.btn-adoption:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(16, 134, 6, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-adoption.secondary {
+    background-color: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-adoption.secondary:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media queries para responsividad */
+@media (max-width: 992px) {
+    .story-card {
+        flex: 0 0 calc(50% - 20px);
+    }
+    
+    .success-stories-section h2 {
+        font-size: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-forms {
+        flex-direction: column;
+    }
+    
+    .success-stories-section h2 {
+        font-size: 50px;
+    }
+    
+    .story-card {
+        flex: 0 0 100%;
+    }
+    
+    .adoption-cta h3 {
+        font-size: 28px;
+    }
+    
+    .cta-text {
+        font-size: 16px;
+    }
+    
+    .submit-story h3,
+    .media-section h3,
+    .featured-stories h3,
+    .testimonials h3 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .success-stories-section h2 {
+        font-size: 40px;
+    }
+    
+    .submit-story button,
+    .btn-adoption {
+        width: 100%;
+    }
+    
+    .video-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .video-btn {
+        width: 100%;
+    }
+    
+    .story-content h4 {
+        font-size: 20px;
+    }
+    
+    .story-content p {
+        font-size: 14px;
+    }
+}

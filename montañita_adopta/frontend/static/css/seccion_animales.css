@@ -1,0 +1,484 @@
+/* Estilos para la sección de animales */
+
+.animals-section {
+    padding: 50px 0;
+    background-color: #f5f5f5;
+}
+
+.animals-section h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #355e3b;
+    font-weight: bold;
+}
+
+/* Estilos para los tabs */
+.animal-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #fff;
+    border: 2px solid #24c03b;
+    border-radius: 30px;
+    color: #355e3b;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.tab-button.active, .tab-button:hover {
+    background-color: #24c03b;
+    color: #fff;
+}
+
+/* Estilos para los filtros */
+.animal-filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.animal-filters select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#filter-button {
+    padding: 8px 15px;
+    background-color: #24c03b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#filter-button:hover {
+    background-color: #2a4a30;
+}
+
+/* Contenedor de animales - MODIFICADO PARA 4 COLUMNAS */
+.animals-container {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Tarjeta de animal */
+.animal-card {
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.animal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.animal-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.animal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.animal-info {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.animal-info h3 {
+    margin: 0 0 5px;
+    font-size: 1.2rem;
+}
+
+.animal-breed {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.animal-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.animal-details span {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.animal-metadata {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.animal-tag {
+    background-color: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #555;
+}
+
+.animal-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.animal-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.875rem;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+}
+
+.btn-primary {
+    background-color: #355e3b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.btn-primary:hover {
+    background-color: #2a4a30;
+}
+
+.btn-secondary {
+    background-color: #fff;
+    color: #355e3b;
+    border: 1px solid #355e3b;
+    border-radius: 4px;
+}
+
+.btn-secondary:hover {
+    background-color: #f0f8f0;
+}
+
+.favorite-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.favorite-toggle i {
+    color: #aaa;
+    transition: color 0.3s ease;
+}
+
+.favorite-toggle.active i {
+    color: #e74c3c;
+}
+
+.favorite-button {
+    background-color: #fff;
+    color: #355e3b;
+    border: 1px solid #355e3b;
+}
+
+.favorite-button:hover {
+    background-color: #f0f8f0;
+}
+
+.favorite-button.favorited, .secondary-btn.favorited {
+    background-color: #ffecb3;
+    color: #e6a70b;
+    border-color: #e6a70b;
+}
+
+/* Paginación */
+.animals-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.pagination-btn {
+    padding: 8px 15px;
+    background-color: #24c03b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #2a4a30;
+}
+
+#page-indicator {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Estilos para el spinner de carga */
+.loading-spinner {
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 30px;
+}
+
+.loading-spinner i {
+    font-size: 40px;
+    color: #355e3b;
+    margin-bottom: 10px;
+}
+
+/* Modal de animales */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 800px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.animal-modal {
+    max-width: 800px;
+    width: 90%;
+}
+
+.animal-detail-container {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .animal-detail-container {
+        flex-direction: row;
+    }
+}
+
+.animal-image-container {
+    flex: 1;
+    max-width: 100%;
+}
+
+@media (min-width: 768px) {
+    .animal-image-container {
+        max-width: 50%;
+    }
+}
+
+.animal-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.animal-info-container {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.animal-info-container h2 {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.animal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.tag {
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    color: #555;
+}
+
+.animal-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.primary-btn {
+    padding: 10px 20px;
+    background-color: #355e3b;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.primary-btn:hover {
+    background-color: #2a4a30;
+}
+
+.secondary-btn {
+    padding: 10px 20px;
+    background-color: #fff;
+    color: #355e3b;
+    border: 1px solid #355e3b;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.secondary-btn:hover {
+    background-color: #f0f8f0;
+}
+
+.error-message {
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 30px;
+}
+
+.error-message i {
+    font-size: 40px;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.no-results {
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 30px;
+}
+
+.no-results i {
+    font-size: 40px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+/* Ajustes responsivos para la cuadrícula de animales */
+
+@media (max-width: 1200px) {
+    .animals-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .animals-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .animal-tabs, .animal-filters {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tab-button, .animal-filters select, #filter-button {
+        width: 100%;
+        max-width: 250px;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .animals-container {
+        grid-template-columns: 1fr !important;
+    }
+}

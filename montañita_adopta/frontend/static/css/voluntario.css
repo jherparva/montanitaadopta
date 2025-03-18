@@ -1,0 +1,307 @@
+/* Voluntario CSS adaptado al estilo de donaciones.css */
+:root {
+  --primary-color: #0d6302;
+  --primary-dark: #3ac018;
+  --secondary-color: #13a840;
+  --secondary-dark: #0e8a34;
+  --accent-color: #f0f8ff;
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --background-light: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor principal para encapsular todos los estilos */
+.voluntariado-banner {
+  background: linear-gradient(rgba(59, 59, 59, 0.541), rgba(41, 41, 41, 0.726)), url('/static/imagenes/hero-donation.jpg');
+  background-size: cover;
+  background-position: center;
+  color: var(--text-light);
+  padding: 80px 0;
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.voluntariado-banner h1 {
+  font-family: 'Blueberry', sans-serif;
+  font-size: 5rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+  color: #ff0505;
+  position: relative;
+  padding-top: 4%;
+}
+
+.voluntariado-banner h1::after {
+  content: "";
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: #ff0505;
+}
+
+/* Contenedor para secciones de voluntariado */
+.voluntariado-container, .apadrinar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  max-width: 1200px;
+  margin: 60px auto;
+  gap: 30px;
+  padding: 0 20px;
+}
+
+.apadrinar-container {
+  flex-direction: row-reverse;
+}
+
+/* Estilos para textos */
+.voluntariado-text, .apadrinar-text {
+  width: 50%;
+  background-color: var(--background-light);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.voluntariado-text:hover, .apadrinar-text:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.voluntariado-text h2, .apadrinar-text h2, .voluntarios-galeria h2 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.voluntariado-text h2::after, .apadrinar-text h2::after, .voluntarios-galeria h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--primary-color);
+}
+
+.voluntarios-galeria h2::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.voluntariado-text p, .apadrinar-text p {
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.voluntariado-text p strong, .apadrinar-text p strong {
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+/* Imágenes con estilo similar */
+.voluntariado-image, .apadrinar-image {
+  width: 50%;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.voluntariado-image:hover, .apadrinar-image:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.voluntariado-image img, .apadrinar-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.voluntariado-image img:hover, .apadrinar-image img:hover {
+  transform: scale(1.05);
+}
+
+/* Botón de llamada a la acción */
+.cta-button {
+  background-color: #192cd3;
+  color: var(--text-light);
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  display: inline-block;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cta-button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(224, 30, 30, 0.3);
+  color: var(--text-light);
+  text-decoration: none;
+}
+
+/* Galería de voluntarios */
+.voluntarios-galeria {
+  background-color: var(--background-light);
+  padding: 60px 20px;
+  margin: 80px auto;
+  text-align: center;
+  max-width: 1200px;
+}
+
+.voluntarios-galeria h2 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 40px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+  text-align: center;
+}
+
+.voluntarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.voluntario-card {
+  background-color: var(--background-light);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.voluntario-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.voluntario-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.voluntario-card:hover img {
+  transform: scale(1.05);
+}
+
+.voluntario-info {
+  padding: 20px;
+}
+
+.voluntario-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.voluntario-info p {
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+
+/* Añadiendo divider con paws similar a donaciones.css */
+.paw-divider {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 30px;
+}
+
+.paw-divider i {
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+/* Agregando animación similar */
+@keyframes volunteer-pulse {
+  0% {
+      transform: scale(1);
+  }
+  50% {
+      transform: scale(1.05);
+  }
+  100% {
+      transform: scale(1);
+  }
+}
+
+/* Estilos responsivos igual que donaciones.css */
+@media (max-width: 992px) {
+  .voluntariado-container, .apadrinar-container {
+      flex-direction: column;
+  }
+  
+  .voluntariado-text, .apadrinar-text, 
+  .voluntariado-image, .apadrinar-image {
+      width: 100%;
+  }
+  
+  .voluntariado-image, .apadrinar-image {
+      height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .voluntariado-banner h1 {
+      font-size: 2.5rem;
+  }
+  
+  .voluntariado-text h2, .apadrinar-text h2, .voluntarios-galeria h2 {
+      font-size: 2rem;
+  }
+  
+  .voluntarios-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .cta-button {
+      width: 100%;
+      text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .voluntariado-banner h1 {
+      font-size: 2rem;
+  }
+  
+  .voluntariado-text h2, .apadrinar-text h2, .voluntarios-galeria h2 {
+      font-size: 1.8rem;
+  }
+  
+  .voluntario-card {
+      margin-bottom: 15px;
+  }
+  
+  .voluntariado-image, .apadrinar-image {
+      height: 250px;
+  }
+}

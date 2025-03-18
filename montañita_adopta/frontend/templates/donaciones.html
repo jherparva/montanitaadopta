@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donaciones - Ayúdanos a Salvar Vidas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/donaciones.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registro.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    {% include 'menu.html' %}
+    {% include 'modals.html' %}
+    <div class="donations-page">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <h1>¡Tu Ayuda Salva Vidas!</h1>
+                <p class="urgent-message"><i class="fas fa-exclamation-circle"></i> URGENTE: Necesitamos tu apoyo ahora para 12 cachorros rescatados esta semana</p>
+                <p>Cada donación nos acerca un paso más a un mundo donde ningún animal sufre abandono o maltrato.</p>
+                <div class="hero-buttons">
+                    <a href="#donacion-monetaria" class="btn btn-primary">Donar Ahora</a>
+                    <a href="#donacion-alimentos" class="btn btn-outline-primary">Donar Alimentos</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Donation Stats Section -->
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number">250+</div>
+                        <div class="stat-label">Animales Rescatados</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1500+</div>
+                        <div class="stat-label">Donantes Activos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">95%</div>
+                        <div class="stat-label">Fondos Destinados Directamente</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+       
+                <!-- Actualización en la sección de donación monetaria -->
+        <section id="donacion-monetaria" class="about-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Opciones de Donación</h2>
+                    <div class="paw-divider">
+                        <i class="fas fa-paw"></i>
+                        <i class="fas fa-paw"></i>
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <p>Tu aporte económico es vital para mantener nuestros rescates y cuidados veterinarios.</p>
+                </div>
+                
+                <div class="about-grid">
+                    <div class="about-card payment-method" id="nequi">
+                        <div class="about-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Nequi</h3>
+                        <p>Envía tu donación a:</p>
+                        <p class="payment-number">📱 3166532433</p>
+                        <button class="btn btn-success send-evidence mt-3">
+                            <i class="fab fa-whatsapp me-1"></i> Enviar evidencia
+                        </button>
+                    </div>
+                    
+                    <div class="about-card payment-method" id="banco-bogota">
+                        <div class="about-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>Banco de Bogotá</h3>
+                        <p>Transfiere tu donación a la cuenta de ahorros:</p>
+                        <p class="payment-number">🏦 312334428</p>
+                        <button class="btn btn-success send-evidence mt-3">
+                            <i class="fab fa-whatsapp me-1"></i> Enviar evidencia
+                        </button>
+                    </div>
+                    
+                    <div class="about-card payment-method" id="paypal">
+                        <div class="about-icon">
+                            <i class="fab fa-paypal"></i>
+                        </div>
+                        <h3>PayPal</h3>
+                        <p>Escanea el siguiente código QR para donar:</p>
+                        <img src="/static/imagenes/codigo_qr_paypal.png" alt="Código QR PayPal" class="qr-code">
+                        <button class="btn btn-success send-evidence mt-3">
+                            <i class="fab fa-whatsapp me-1"></i> Enviar evidencia
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actualización en la sección de donación de alimentos -->
+        <section id="donacion-alimentos" class="testimonials-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Donación de Alimentos</h2>
+                    <div class="paw-divider">
+                        <i class="fas fa-paw"></i>
+                        <i class="fas fa-paw"></i>
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <p>Ayuda a alimentar a nuestros rescatados con comida de calidad.</p>
+                </div>
+                
+                <div class="testimonial-card">
+                    <form class="donation-form">
+                        <div class="form-group mb-4">
+                            <label for="food-type" class="form-label">Tipo de Alimento:</label>
+                            <select id="food-type" name="food-type" class="form-select" required>
+                                <option value="dog-food">Comida para Perros</option>
+                                <option value="cat-food">Comida para Gatos</option>
+                                <option value="puppy-food">Comida para Cachorros</option>
+                                <option value="kitten-food">Comida para Gatitos</option>
+                                <option value="special-diet">Dietas Especiales/Medicadas</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="quantity" class="form-label">Cantidad (Kg):</label>
+                            <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Ej. 5, 10, 20" required>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Opciones de entrega:</label>
+                            <div class="delivery-options">
+                                <button type="button" class="delivery-option btn btn-primary me-2" data-option="self">
+                                    <i class="fas fa-hand-holding-heart me-1"></i> Entregaré personalmente
+                                </button>
+                                <button type="button" class="delivery-option btn btn-outline-primary" data-option="pickup">
+                                    <i class="fas fa-truck me-1"></i> Solicitar recogida
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Nuevo div para mostrar la ubicación del refugio -->
+                        <div id="shelter-location" class="form-group mb-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-map-marker-alt me-2"></i> Ubicación del Refugio
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Dirección:</strong> carrera 5 calle 8a #04, barrio guillermo escobar</p>
+                                    <p><strong>Horarios de recepción:</strong> Lunes a Viernes de 9:00 AM a 5:00 PM</p>
+                                    <p><strong>Teléfono:</strong> 3166532433</p>
+                                    <div class="map-container">
+                                        <!-- Google Maps iframe con las coordenadas exactas -->
+                                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m8!1m3!1d3986.7971416573864!2d-75.435075!3d1.482825!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcKwMjgnNTguMiJOIDc1wrAyNicwNi4zIlc!5e0!3m2!1ses!2sco!4v1710619500000!5m2!1ses!2sco" width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                    </div>
+                                    <!-- Botones alternativos para abrir mapas externos -->
+                                    <div class="mt-3 text-center">
+                                        <p class="mb-2 small">Si el mapa no carga correctamente, puedes abrir nuestra ubicación en:</p>
+                                        <a href="https://maps.apple.com/?ll=1.482825,-75.435075&q=Montañita+Adopta" class="btn btn-sm btn-outline-secondary me-2" target="_blank">
+                                            <i class="fab fa-apple me-1"></i> Apple Maps
+                                        </a>
+                                        <a href="https://www.google.com/maps?q=1.482825,-75.435075" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                            <i class="fab fa-google me-1"></i> Google Maps
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulario actualizado para la recogida -->
+                        <div id="pickup-address" class="form-group mb-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-truck me-2"></i> Información para la recogida
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group mb-3">
+                                        <label for="pickup-city" class="form-label">Ciudad:</label>
+                                        <select id="pickup-city" name="pickup-city" class="form-select">
+                                            <option value="mismo-ciudad">Misma ciudad del refugio</option>
+                                            <option value="otra-ciudad">Otra ciudad</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="local-pickup" class="form-group mb-3">
+                                        <label for="pickup-address-input" class="form-label">Dirección para recogida:</label>
+                                        <input type="text" id="pickup-address-input" name="pickup-address" class="form-control" placeholder="Ingresa tu dirección completa">
+                                        <small class="text-muted">Recogeremos la donación en los próximos 2-3 días hábiles.</small>
+                                    </div>
+                                    
+                                    <div id="remote-pickup" class="form-group mb-3" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i> Para donaciones desde otras ciudades, puedes enviar los alimentos a nuestra dirección:
+                                            <hr>
+                                            <p><strong>Dirección:</strong> carrera 5 calle 8a #04, barrio guillermo escobar</p>
+                                            <p><strong>Ciudad:</strong> La Montañita, Caqueta</p>
+                                            <p><strong>A nombre de:</strong> Montañita Adopta</p>
+                                            <p><strong>Teléfono:</strong> 3166532433</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary donate-btn">
+                            <i class="fas fa-heart me-1"></i> Donar Alimentos
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    {% include 'footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/6be5f6dc99.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/metodos_donar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/perfil_menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modal_config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/donaciones2.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api_connector.js') }}" defer></script>
+</body>
+</html>

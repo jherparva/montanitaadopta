@@ -1,0 +1,131 @@
+.login-container {
+    max-width: 400px;
+    width: 100%;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco con opacidad del 80% */
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 255, 0, 0.6); /* Sombra verde luminosa */
+    margin-top: 150px;
+    margin-bottom: 60px; /* Ajuste del margen inferior para el footer */
+}
+
+.login-container h2 {
+    font-family: 'Blueberry';
+    text-align: center;
+    color: #cf0707; /* Color del texto del título */
+    margin-bottom: 20px; /* Espacio debajo del título */
+    font-size: 50px; /* Tamaño del título */
+    font-weight: 600; /* Grosor del título */
+}
+
+.login-container label {
+    display: block;
+    margin-bottom: 8px;
+    color: #000000; /* Color más claro para las etiquetas */
+    font-size: 16px; /* Tamaño de la fuente de las etiquetas */
+    font-weight: bold;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 12px; /* Mayor padding para entradas */
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px; /* Bordes más redondeados en entradas */
+    box-sizing: border-box; /* Incluye padding en el ancho total */
+    font-size: 16px; /* Tamaño de fuente más grande */
+}
+
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #27b80b; /* Color de fondo del botón */
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px; /* Tamaño de fuente del botón */
+    transition: background-color 0.3s, transform 0.3s; /* Transiciones suaves */
+}
+
+.login-container button:hover {
+    background-color: #126102;
+    transform: translateY(-2px); /* Efecto de elevación al pasar el ratón */
+}
+
+.login-container button:active {
+    transform: translateY(1px); /* Efecto de presión al hacer clic */
+}
+
+.forgot-password {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para los botones de login social */
+.social-login {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-top: 15px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.social-login.google {
+    background-color: #db4437;
+    color: #fff;
+}
+
+.social-login.facebook {
+    background-color: #3b5998;
+    color: #fff;
+}
+
+.social-login.google:hover {
+    background-color: #c1351d;
+    transform: translateY(-2px);
+}
+
+.social-login.facebook:hover {
+    background-color: #0d2455;
+    transform: translateY(-2px);
+}
+
+.social-login:active {
+    transform: translateY(1px);
+}
+
+/* Estilos para el botón de Google Identity Services */
+.g_id_signin {
+    width: 100%;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Asegurarse de que el botón de Google tenga dimensiones similares a los otros botones sociales */
+.g_id_signin div[role="button"] {
+    width: 100% !important;
+    border-radius: 6px !important;
+    transition: transform 0.3s !important;
+}
+
+.g_id_signin div[role="button"]:hover {
+    transform: translateY(-2px) !important;
+}
+
+.g_id_signin div[role="button"]:active {
+    transform: translateY(1px) !important;
+}

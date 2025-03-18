@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contacto.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registro.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="adopcion-page">
+
+    {% include 'menu.html' %}  <!-- Incluir el menú -->
+    {% include 'modals.html' %}
+  
+    <main>
+        <div class="contact-wrapper">
+            <div class="contact-container">
+                <h2>Contáctanos</h2>
+                
+                <!-- Banner con llamada a la acción -->
+                <div class="cta-banner">
+                    <div class="cta-icon"><i class="fas fa-paw"></i></div>
+                    <div class="cta-content">
+                        <h3>¿Tienes preguntas sobre adopción?</h3>
+                        <p>Completa este formulario y te responderemos lo antes posible. ¡Juntos podemos darle un hogar a todos los peluditos!</p>
+                    </div>
+                </div>
+                
+                <form id="contact-form">
+                    <div class="contact-row">
+                        <div class="input-group">
+                            <label for="name">Nombre Completo</label>
+                            <input type="text" id="name" name="name" placeholder="Tu nombre completo" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="email">Correo Electrónico</label>
+                            <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="subject">Asunto</label>
+                        <input type="text" id="subject" name="subject" placeholder="Asunto de tu mensaje" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="message">Mensaje</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Escribe tu mensaje aquí" required></textarea>
+                    </div>
+                    
+                    <!-- Checkbox para política de privacidad -->
+                    <div class="privacy-checkbox">
+                        <input type="checkbox" id="privacy-policy" name="privacy-policy" required>
+                        <label for="privacy-policy">He leído y acepto la <a href="#" id="privacy-policy-link">política de privacidad</a></label>
+                    </div>
+                    
+                    <button type="submit">Enviar</button>
+                </form>
+                
+                <!-- Elementos decorativos (dentro del container) -->
+                <div class="paw-prints paw-1"></div>
+                <div class="paw-prints paw-2"></div>
+                <div class="form-decoration decoration-1"></div>
+                <div class="form-decoration decoration-2"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Onda decorativa -->
+    <div class="wave-decoration"></div>
+    
+    <!-- Modal de política de privacidad -->
+    <div class="modal fade" id="privacyPolicyModal" tabindex="-1" aria-labelledby="privacyPolicyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="privacyPolicyModalLabel">Política de Privacidad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>Política de Privacidad y Tratamiento de Datos Personales</h4>
+                    <p><strong>1. Responsable del tratamiento</strong></p>
+                    <p>La Asociación de Protección Animal "Montañita Adopta" (en adelante, "Montañita Adopta"), con domicilio en La Montañita, Caqueta y CIF [NÚMERO], es el responsable del tratamiento de los datos personales que nos facilite a través de este formulario de contacto.</p>
+                    
+                    <p><strong>2. Finalidad del tratamiento</strong></p>
+                    <p>Los datos personales que nos proporcione serán tratados con la finalidad de atender las consultas que nos realice a través del formulario de contacto y, en su caso, gestionar los procesos de adopción o las actividades relacionadas con nuestra asociación en las que pueda estar interesado.</p>
+                    
+                    <p><strong>3. Legitimación</strong></p>
+                    <p>La base legal para el tratamiento de sus datos es su consentimiento, que nos otorga al marcar la casilla correspondiente y enviar el formulario de contacto.</p>
+                    
+                    <p><strong>4. Destinatarios</strong></p>
+                    <p>Sus datos no serán cedidos a terceros, salvo obligación legal o cuando sea necesario para la gestión de los procesos de adopción, en cuyo caso se le informará previamente.</p>
+                    
+                    <p><strong>5. Conservación de los datos</strong></p>
+                    <p>Sus datos se conservarán durante el tiempo necesario para atender su consulta y, en su caso, gestionar los procesos de adopción o las actividades relacionadas con nuestra asociación en las que pueda estar interesado.</p>
+                    
+                    <p><strong>6. Derechos</strong></p>
+                    <p>Tiene derecho a acceder, rectificar y suprimir sus datos, así como a ejercer otros derechos, como se explica en la información adicional.</p>
+                    
+                    <p><strong>7. Información adicional</strong></p>
+                    <p>Puede consultar la información adicional y detallada sobre Protección de Datos en nuestra política de privacidad completa disponible en nuestra página web.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="accept-privacy">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de agradecimiento -->
+    <div class="modal fade" id="thankYouModal" tabindex="-1" aria-labelledby="thankYouModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="thankYouModalLabel">¡Mensaje Enviado!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="thank-you-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4>¡Gracias por contactarnos!</h4>
+                    <p>Hemos recibido tu mensaje correctamente. Nos pondremos en contacto contigo lo antes posible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/contacto.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modal_config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/perfil_menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api_connector.js') }}" defer></script>
+    <script src="https://kit.fontawesome.com/6be5f6dc99.js" crossorigin="anonymous"></script>
+</body>
+</html>

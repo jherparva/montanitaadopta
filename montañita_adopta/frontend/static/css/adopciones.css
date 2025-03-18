@@ -1,0 +1,477 @@
+/* Estilo general para el main */
+
+
+.adoptions-section h2 {
+    font-family: 'Blueberry', sans-serif;
+    text-align: center;
+    color: #e01e1e;
+    margin-bottom: 30px;
+    font-size: 46px;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-top: 7%;
+}
+
+.adoptions-section h2:after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: #e01e1e;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Contenedor de categorías */
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+/* Estilos de las categorías (perros/gatos) */
+.category {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    margin: 0 0 20px 0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* En pantallas grandes, cada categoría ocupa el 48% del ancho */
+@media (min-width: 1025px) {
+    .categories-container .category {
+        width: 48%;
+    }
+}
+
+/* En tablets y móviles, ocupan el 100% */
+@media (max-width: 1024px) {
+    .categories-container .category {
+        width: 100%;
+    }
+}
+
+.category:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.category h3 {
+    margin: 0 0 20px;
+    font-size: 22px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Estilos del carrusel */
+.carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 8px;
+}
+
+.carousel-container {
+    display: flex;
+    width: 100%;
+    transition: transform 0.5s ease;
+    position: relative;
+    justify-content: center; /* Cambiar de flex-start a center */
+}
+
+.carousel-item .animal {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-item {
+    min-width: calc(50% - 40px);
+    max-width: calc(50% - 200px);
+    margin: 0 5px;
+}
+
+.carousel-item.active {
+    display: inline-block; /* Show active items as inline-block */
+}
+
+/* Para pantallas grandes (dos elementos a la vez) */
+@media (min-width: 601px) {
+    .carousel-container {
+        justify-content: center;
+    }
+    
+    /* Ajuste para que se vean dos elementos a la vez y centrados */
+    .carousel-item.active,
+    .carousel-item.active + .carousel-item {
+        display: block;
+    }
+}
+
+/* Para pantallas pequeñas (un solo elemento) */
+@media (max-width: 600px) {
+    .carousel-container {
+        justify-content: center;
+    }
+    
+    .carousel-item.active {
+        display: block;
+        margin: 0 auto; /* Centrar el único elemento visible */
+    }
+    
+    .carousel-item.active + .carousel-item {
+        display: none;
+    }
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    padding: 12px;
+    font-size: 22px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+
+.carousel-control.prev {
+    left: 10px;
+}
+
+.carousel-control.next {
+    right: 10px;
+}
+
+.carousel-control:hover {
+    background-color: rgba(0, 123, 255, 0.9);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Estilo para el spinner de carga */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    width: 100%;
+}
+
+.loading-spinner i {
+    font-size: 36px;
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.loading-spinner p {
+    color: #666;
+    font-size: 16px;
+}
+
+/* Estilos para los animales dentro del carrusel */
+.animal {
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.animal img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.5s ease;
+}
+
+.animal:hover img {
+    transform: scale(1.05);
+}
+
+.animal h4 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+}
+
+.animal p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+.animal button {
+    background-color: #0066cc;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 102, 204, 0.2);
+}
+
+.animal button i {
+    margin-right: 8px;
+}
+
+.animal button:hover {
+    background-color: #004d99;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 102, 204, 0.3);
+}
+
+.animal button:active {
+    transform: translateY(0);
+}
+
+/* Contenedor de historias */
+.submit-story {
+    background: linear-gradient(135deg, #f9f9f9 0%, #f0f4f7 100%);
+    padding: 50px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    margin: 40px 0;
+}
+
+.submit-story .container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.submit-story h3 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+    position: relative;
+}
+
+.submit-story h3:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #3498db;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+.submit-story form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.submit-story label {
+    font-size: 16px;
+    color: #34495e;
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.submit-story input, .submit-story textarea {
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.submit-story input:focus, .submit-story textarea:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+}
+
+.submit-story textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.submit-story button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 30px;
+    border: none;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 220px;
+    margin: 10px auto 0;
+    box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3);
+}
+
+.submit-story button:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #2473a6 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4);
+}
+
+.submit-story button:active {
+    transform: translateY(0);
+}
+
+/* Estilo para el formulario de búsqueda */
+.search-form {
+    max-width: 350px;
+    margin: 0 auto 40px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.search {
+    max-width: 350px;
+    margin: 0 auto 40px;
+}
+
+select, input[type="text"] {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    width: 100%;
+    font-size: 15px;
+    background-color: #ffffff;
+    color: #333;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+select:focus, input[type="text"]:focus {
+    border-color: #a5d6a7;
+    background-color: #f1f8f1;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(10, 167, 31, 0.2);
+}
+
+button[type="submit"] {
+    background: linear-gradient(135deg, #2c8c30 0%, #1d5e20 100%);
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+    height: 45px;
+    box-shadow: 0 4px 8px rgba(29, 94, 32, 0.2);
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, #3dbd42 0%, #2c8c30 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(29, 94, 32, 0.3);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+select {
+    appearance: none;
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"%3E%3Cpath fill="none" d="M0 0h24v24H0z"/%3E%3Cpath d="M12 15l-4.243-4.243 1.415-1.414L12 12.172l2.828-2.829 1.415 1.414z" fill="%232c8c30"/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+}
+
+select:disabled, input[type="text"]:disabled {
+    background-color: #f5f5f5;
+    color: #bbb;
+    border-color: #e5e5e5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Media Query para pantallas de tabletas */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .adoptions-section h2 {
+        font-size: 40px;
+    }
+}
+
+/* Media Query para pantallas pequeñas (móviles) */
+@media (max-width: 600px) {
+    .adoptions-section h2 {
+        font-size: 36px;
+    }
+    
+    .submit-story {
+        padding: 30px 20px;
+    }
+    
+    .submit-story h3 {
+        font-size: 24px;
+    }
+    
+    .carousel-control {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .carousel-item {
+        min-width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
+    }
+    
+    .category h3 {
+        font-size: 20px;
+    }
+    
+    button[type="submit"] {
+        height: 42px;
+    }
+    
+    select, input[type="text"] {
+        font-size: 15px;
+        padding: 10px 12px;
+    }
+}
