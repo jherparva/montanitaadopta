@@ -15,6 +15,12 @@ from app.models import *
 # access to the values within the .ini file in use.
 config = context.config
 
+# Sobrescribe la URL de la base de datos con la URL de PostgreSQL en Render
+config.set_main_option(
+    "sqlalchemy.url", 
+    "postgresql://bdmontanitaadopta_user:BNYCV64cujn9qohDJk8kQkHDmQY3teE0@dpg-cvcfgtjtq21c739uf2lg-a.oregon-postgres.render.com/bdmontanitaadopta"
+)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -71,7 +77,10 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata,
+            # Asegúrate de que compare_type esté activado para detectar cambios en tipos de datos
+            compare_type=True
         )
 
         with context.begin_transaction():
