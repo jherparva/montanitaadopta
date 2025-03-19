@@ -2,18 +2,24 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import requests
 import jwt
 import time
+import os
 from flask_session import Session  
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = '9b73f2a1bdd7ae163444473d29a6885ffa22ab26117068f72a5a56a74d12d1fc'  
+# Usar variable de entorno para la clave secreta
+app.secret_key = os.environ.get('SECRET_KEY', '9b73f2a1bdd7ae163444473d29a6885ffa22ab26117068f72a5a56a74d12d1fc')
 
-# Configuración de sesión
-app.config["SESSION_PERMANENT"] = True  # Mantiene la sesión activa
+# Configuración de sesión para producción
+app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
+# Hacer la sesión más segura en producción
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get('FLASK_ENV') == 'production'
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 Session(app)
 
-API_URL = 'http://127.0.0.1:8000/adoptme/api/v1/'  
+# URL de la API en producción
+API_URL = os.environ.get('API_URL', 'https://montanitaadopta.onrender.com/adoptme/api/v1/')
 
 def obtener_usuario_desde_sesion():
     """Obtiene el usuario autenticado desde la sesión haciendo una petición al backend."""
@@ -105,7 +111,7 @@ def register():
         nombre = request.form['nombre']
         correo_electronico = request.form['correo_electronico']
         direccion = request.form['direccion']
-        codigo_postal = request.form['codigo_postal']  # Obtener el código postal del formulario
+        codigo_postal = request.form['codigo_postal']
         telefono = request.form['telefono']
         contrasena = request.form['contrasena']
         confirmar_contrasena = request.form['confirmar_contrasena']
@@ -120,14 +126,14 @@ def register():
             'contrasenia': contrasena,
             'correo': correo_electronico,
             'direccion': direccion,
-            'codigo_postal': codigo_postal,  # Agregar código postal al payload
+            'codigo_postal': codigo_postal,
             'telefono': telefono,
             'edad': 0,
             'jwt': ""
         }
 
         try:
-            response = requests.post(API_URL + '/auth/register', json=payload)
+            response = requests.post(API_URL + 'auth/register', json=payload)
             if response.status_code == 200:
                 token = response.json().get('access_token')
                 session['token'] = token  
@@ -164,8 +170,6 @@ def formulario_adopcion():
 
     return render_template('formulario_adopcion.html', usuario_nombre=usuario_nombre, mascota=mascota)
 
-
-
 @app.route('/donaciones')
 def donaciones():
     usuario_nombre = obtener_usuario_desde_sesion()
@@ -194,5 +198,7 @@ def historias_exito():
     usuario_nombre = obtener_usuario_desde_sesion()
     return render_template('historias_exito.html', usuario_nombre=usuario_nombre)
 
+# Esta parte solo se ejecutará durante el desarrollo local
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)
+    # Usar 0.0.0.0 para permitir conexiones desde cualquier origen
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
