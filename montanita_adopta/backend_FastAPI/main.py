@@ -45,7 +45,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "supers
 
 # Configuración de CORS
 origins = [
-    "http://localhost",
+    "https://montanitaadopta.onrender.com",
     "http://localhost:8000",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -54,7 +54,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:3000", "http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

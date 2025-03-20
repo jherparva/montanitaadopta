@@ -2,7 +2,7 @@
  * Clase para manejar las peticiones a la API y funcionalidades de autenticación
  */
 class APIConnector {
-    constructor(baseURL = 'http://localhost:8000/adoptme/api/v1') {
+    constructor(baseURL = 'https://montanitaadopta.onrender.com/adoptme/api/v1') {
         this.baseURL = baseURL;
         this.token = localStorage.getItem('token') || '';
         console.log('Token al inicializar:', this.token);
@@ -776,7 +776,7 @@ async registerHandler(event) {
         }
     
         try {
-            const response = await fetch("http://localhost:8000/adoptme/api/v1/auth/me", {
+            const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/me", {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -915,4 +915,4 @@ async registerHandler(event) {
 }
 
 // Crear una instancia global
-const apiConnector = new APIConnector('http://localhost:8000/adoptme/api/v1');
+const apiConnector = new APIConnector('https://montanitaadopta.onrender.com/adoptme/api/v1');

@@ -104,7 +104,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 # 🔹 Endpoint para login con Google (redirige al usuario a Google)
 @router.get("/google", operation_id="login_with_google_redirect_adoptme")
 async def login_via_google(request: Request):
-    redirect_uri = "http://localhost:8000/adoptme/api/v1/auth/google/callback"
+    redirect_uri = "https://montanitaadopta.onrender.com/adoptme/api/v1/auth/google/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 # 🔹 Endpoint para recibir el callback de Google y autenticar al usuario

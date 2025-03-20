@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para enviar el id_token al backend y hacer login
     async function loginWithGoogle(id_token) {
         try {
-            const response = await fetch("http://localhost:8000/adoptme/api/v1/auth/google-login", {
+            const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/google-login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok && data.access_token) {
                 localStorage.setItem("token", data.access_token);
                 showSuccess("Inicio de sesión exitoso con Google");
-                window.location.href = "http://localhost:3000"; // Redirigir a la página principal
+                window.location.href = "https://webmontanitaadopta.onrender.com/"; // Redirigir a la página principal
             } else {
                 showError(data.message || "Error al iniciar sesión con Google. Por favor, intenta de nuevo.");
             }
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para enviar el accessToken al backend y hacer login
     async function loginWithFacebook(accessToken) {
         try {
-            const response = await fetch("http://localhost:8000/adoptme/api/v1/auth/facebook-login", {
+            const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/facebook-login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok && data.access_token) {
                 localStorage.setItem("token", data.access_token);
                 showSuccess("Inicio de sesión exitoso con Facebook");
-                window.location.href = "http://localhost:3000"; // Redirigir a la página principal
+                window.location.href = "https://webmontanitaadopta.onrender.com/"; // Redirigir a la página principal
             } else {
                 showError(data.message || "Error al iniciar sesión con Facebook");
             }
