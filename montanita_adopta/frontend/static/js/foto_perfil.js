@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Obtener el token de acceso del almacenamiento local
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             
             if (!token) {
                 throw new Error('No se encontró el token de autenticación');
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar el nombre de usuario y la foto de perfil al cargar la página
     async function updateUserUI() {
         try {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             
             if (!token) {
                 // Si no hay token, mostrar el menú de login
