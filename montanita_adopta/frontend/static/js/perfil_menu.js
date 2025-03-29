@@ -147,119 +147,7 @@ function addTranslateAttributes() {
     document.querySelector('img#photo-preview').setAttribute('data-translate-alt', 'Vista previa');
 }
 
-// Mejorar la funcionalidad de foto de perfil
-document.addEventListener('DOMContentLoaded', function() {
-    const photoInput = document.getElementById('profile-photo-upload');
-    const photoPreview = document.getElementById('photo-preview');
-    
-    if (photoInput) {
-        photoInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                // Validar el tamaño del archivo (máximo 5MB)
-                const maxSize = 5 * 1024 * 1024; // 5MB en bytes
-                if (this.files[0].size > maxSize) {
-                    showAlert('El archivo es demasiado grande. Tamaño máximo: 5MB', 'error');
-                    this.value = ''; // Limpiar el input
-                    photoPreview.style.display = 'none';
-                    return;
-                }
-                
-                // Validar tipo de archivo
-                const fileType = this.files[0].type;
-                if (!fileType.match('image.*')) {
-                    showAlert('Solo se permiten imágenes (jpg, png, gif)', 'error');
-                    this.value = ''; // Limpiar el input
-                    photoPreview.style.display = 'none';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    photoPreview.src = e.target.result;
-                    photoPreview.style.display = 'block';
-                };
-                
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-    }
-    
-    // Manejar el envío del formulario de foto de perfil
-    const photoForm = document.getElementById('profile-photo-form');
-    if (photoForm) {
-        photoForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Verificar si hay un archivo seleccionado
-            const fileInput = document.getElementById('profile-photo-upload');
-            if (!fileInput.files || fileInput.files.length === 0) {
-                showAlert('Por favor selecciona una imagen', 'error');
-                return;
-            }
-            
-            // Verificar si el usuario está autenticado
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                showAlert('Debes iniciar sesión para cambiar tu foto de perfil', 'error');
-                closeModal('photoModal');
-                openModal('loginModal'); // Abrir modal de login
-                return;
-            }
-            
-            const formData = new FormData(this);
-            
-            // Mostrar indicador de carga
-            const uploadButton = document.querySelector('.upload-button');
-            const originalText = uploadButton.textContent;
-            uploadButton.textContent = 'Subiendo...';
-            uploadButton.disabled = true;
-            
-            fetch('/api/update-profile-photo', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error en la respuesta del servidor: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Actualizar la foto de perfil en el menú
-                    document.getElementById('profile-photo').src = data.photoUrl + '?t=' + new Date().getTime(); // Añadir timestamp para evitar caché
-                    
-                    // Cerrar el modal
-                    closeModal('photoModal');
-                    
-                    // Mostrar mensaje de éxito
-                    showAlert('Foto de perfil actualizada con éxito', 'success');
-                    
-                    // Limpiar el formulario
-                    photoForm.reset();
-                    photoPreview.style.display = 'none';
-                } else {
-                    showAlert('Error al actualizar la foto: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al subir la imagen: ' + error.message, 'error');
-            })
-            .finally(() => {
-                // Restaurar el botón
-                uploadButton.textContent = originalText;
-                uploadButton.disabled = false;
-            });
-        });
-    }
-});
-
-// Función mejorada para mostrar mensajes de alerta
+// Función para mostrar alertas
 function showAlert(message, type) {
     // Remover alertas existentes
     const existingAlerts = document.querySelectorAll('.alert');
@@ -269,31 +157,25 @@ function showAlert(message, type) {
     alertDiv.className = `alert ${type === 'success' ? 'alert-success' : 'alert-danger'}`;
     alertDiv.textContent = message;
     
-    // Añadir estilos inline para las alertas
-    alertDiv.style.position = 'fixed';
-    alertDiv.style.top = '20px';
-    alertDiv.style.left = '50%';
-    alertDiv.style.transform = 'translateX(-50%)';
-    alertDiv.style.padding = '10px 20px';
-    alertDiv.style.borderRadius = '5px';
-    alertDiv.style.zIndex = '9999';
-    
-    if (type === 'success') {
-        alertDiv.style.backgroundColor = '#d4edda';
-        alertDiv.style.color = '#155724';
-        alertDiv.style.border = '1px solid #c3e6cb';
-    } else {
-        alertDiv.style.backgroundColor = '#f8d7da';
-        alertDiv.style.color = '#721c24';
-        alertDiv.style.border = '1px solid #f5c6cb';
-    }
+    // Estilos inline para las alertas
+    Object.assign(alertDiv.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        zIndex: '9999',
+        backgroundColor: type === 'success' ? '#d4edda' : '#f8d7da',
+        color: type === 'success' ? '#155724' : '#721c24',
+        border: `1px solid ${type === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
+        opacity: '0',
+        transition: 'opacity 0.3s ease'
+    });
     
     document.body.appendChild(alertDiv);
     
     // Animación de entrada
-    alertDiv.style.opacity = '0';
-    alertDiv.style.transition = 'opacity 0.3s ease';
-    
     setTimeout(() => {
         alertDiv.style.opacity = '1';
     }, 10);
@@ -305,4 +187,276 @@ function showAlert(message, type) {
             alertDiv.remove();
         }, 300);
     }, 3000);
+}
+
+// Función para manejar la subida de foto de perfil
+function handleProfilePhotoUpload(event) {
+    event.preventDefault();
+    
+    const fileInput = document.getElementById('profile-photo-upload');
+    const photoPreview = document.getElementById('photo-preview');
+    
+    // Validar tamaño y tipo de archivo
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showAlert('Por favor selecciona una imagen', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    if (file.size > maxSize) {
+        showAlert('El archivo es demasiado grande. Tamaño máximo: 5MB', 'error');
+        fileInput.value = '';
+        photoPreview.style.display = 'none';
+        return;
+    }
+    
+    if (!file.type.match('image.*')) {
+        showAlert('Solo se permiten imágenes (jpg, png, gif)', 'error');
+        fileInput.value = '';
+        photoPreview.style.display = 'none';
+        return;
+    }
+    
+    // Verificar token de autenticación
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showAlert('Debes iniciar sesión para cambiar tu foto de perfil', 'error');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const uploadButton = document.querySelector('.upload-button');
+    const originalText = uploadButton.textContent;
+    
+    // Deshabilitar botón durante la subida
+    uploadButton.textContent = 'Subiendo...';
+    uploadButton.disabled = true;
+    
+    fetch('/api/update-profile-photo', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Actualizar todas las referencias de la foto de perfil
+            const profilePhotos = document.querySelectorAll('#profile-photo, #current-profile-photo');
+            profilePhotos.forEach(photo => {
+                photo.src = data.photoUrl + '?t=' + Date.now();
+            });
+            
+            // Cerrar modal y mostrar mensaje de éxito
+            closePhotoModal();
+            showAlert('Foto de perfil actualizada con éxito', 'success');
+            
+            // Limpiar formulario
+            event.target.reset();
+            photoPreview.style.display = 'none';
+        } else {
+            showAlert('Error al actualizar la foto: ' + (data.message || 'Error desconocido'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error al subir la imagen: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Restaurar botón
+        uploadButton.textContent = originalText;
+        uploadButton.disabled = false;
+    });
+}
+
+// Función para previsualizar la imagen de perfil
+function previewProfilePhoto() {
+    const fileInput = document.getElementById('profile-photo-upload');
+    const photoPreview = document.getElementById('photo-preview');
+    
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            photoPreview.src = e.target.result;
+            photoPreview.style.display = 'block';
+        };
+        
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+}
+
+// Función mejorada para manejar la subida de foto de perfil
+function handleProfilePhotoUpload(event) {
+    event.preventDefault();
+    
+    const fileInput = document.getElementById('profile-photo-upload');
+    const photoPreview = document.getElementById('photo-preview');
+    
+    // Validaciones de archivo
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showAlert(translations[getCurrentLanguage()]['Error al subir la imagen'], 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    // Validaciones de tamaño y tipo
+    if (file.size > maxSize) {
+        showAlert('El archivo es demasiado grande. Tamaño máximo: 5MB', 'error');
+        fileInput.value = '';
+        photoPreview.style.display = 'none';
+        return;
+    }
+    
+    if (!file.type.match('image.*')) {
+        showAlert('Solo se permiten imágenes (jpg, png, gif)', 'error');
+        fileInput.value = '';
+        photoPreview.style.display = 'none';
+        return;
+    }
+    
+    // Verificar token de autenticación
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showAlert('Debes iniciar sesión para cambiar tu foto de perfil', 'error');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const uploadButton = document.querySelector('.upload-button');
+    const originalText = uploadButton.textContent;
+    
+    // Deshabilitar botón durante la subida
+    uploadButton.textContent = 'Subiendo...';
+    uploadButton.disabled = true;
+    
+    // Envío de foto al backend
+    fetch('/adoptme/api/v1/update-profile-photo', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.photoUrl) {
+            // Actualizar todas las referencias de la foto de perfil
+            const profilePhotos = document.querySelectorAll('#profile-photo, #current-profile-photo');
+            profilePhotos.forEach(photo => {
+                photo.src = data.photoUrl + '?t=' + Date.now();
+            });
+            
+            // Cerrar modal y mostrar mensaje de éxito
+            closePhotoModal();
+            showAlert(translations[getCurrentLanguage()]['Foto de perfil actualizada con éxito'], 'success');
+            
+            // Limpiar formulario
+            event.target.reset();
+            photoPreview.style.display = 'none';
+        } else {
+            showAlert('Error al actualizar la foto', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error al subir la imagen: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Restaurar botón
+        uploadButton.textContent = originalText;
+        uploadButton.disabled = false;
+    });
+}
+
+// Función para obtener el idioma actual
+function getCurrentLanguage() {
+    return localStorage.getItem('selectedLanguage') || 'es';
+}
+
+// Eventos de inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    // Detectar y establecer idioma
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get('lang') || localStorage.getItem('selectedLanguage') || 'es';
+    updateLanguage(lang);
+    addTranslateAttributes();
+    
+    // Configurar eventos de idioma
+    const langLinks = document.querySelectorAll('.submenu a[href^="?lang="]');
+    langLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const selectedLang = this.href.split('=')[1];
+            updateLanguage(selectedLang);
+            
+            const url = new URL(window.location);
+            url.searchParams.set('lang', selectedLang);
+            window.history.pushState({}, '', url);
+        });
+    });
+    
+    // Configurar eventos de subida de foto
+    const photoInput = document.getElementById('profile-photo-upload');
+    if (photoInput) {
+        photoInput.addEventListener('change', previewProfilePhoto);
+    }
+    
+    const photoForm = document.getElementById('profile-photo-form');
+    if (photoForm) {
+        photoForm.addEventListener('submit', handleProfilePhotoUpload);
+    }
+    
+    // Configurar hover del menú de usuario
+    setupUserMenuHover();
+    
+    // Mejorar visibilidad de submenús
+    const submenus = document.querySelectorAll('.has-submenu');
+    submenus.forEach(submenu => {
+        submenu.addEventListener('mouseenter', function() {
+            const submenuDropdown = this.querySelector('.submenu');
+            if (submenuDropdown) {
+                submenuDropdown.style.opacity = '1';
+                submenuDropdown.style.visibility = 'visible';
+            }
+        });
+        
+        submenu.addEventListener('mouseleave', function() {
+            const submenuDropdown = this.querySelector('.submenu');
+            if (submenuDropdown) {
+                submenuDropdown.style.opacity = '0';
+                submenuDropdown.style.visibility = 'hidden';
+            }
+        });
+    });
+});
+
+// Funciones auxiliares
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openPhotoModal() {
+    const modal = document.getElementById('photoModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
 }

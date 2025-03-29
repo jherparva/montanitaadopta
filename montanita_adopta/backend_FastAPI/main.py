@@ -17,7 +17,7 @@ from app.core.db import get_db, Base, engine
 from app.models.mascotas import Mascota
 
 # Importar endpoints
-from app.api.v1.endpoints import auth, mascotas, usuarios, contacto, success_stories
+from app.api.v1.endpoints import auth, mascotas, usuarios, contacto, success_stories, veterinary_services
 
 from app.auth.oauth2 import get_current_user
 from fastapi.security import OAuth2PasswordBearer
@@ -142,3 +142,4 @@ app.include_router(mascotas.router, prefix="/adoptme/api/v1/mascotas", tags=["ma
 app.include_router(usuarios.router, prefix="/adoptme/api/v1/usuarios", tags=["usuarios"])
 app.include_router(success_stories.router, prefix="/adoptme/api/v1/success_stories", tags=["stories"])
 app.include_router(contacto.router, prefix="/adoptme/api/v1", tags=["contacto"])
+app.include_router(veterinary_services.router, prefix="/adoptme/api/v1/veterinary_services", tags=["veterinary"])

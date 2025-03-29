@@ -38,7 +38,7 @@
         <div class="welcome-content">
             <span class="close-welcome">&times;</span>
             <div class="welcome-header">
-                <img src="/static/imagenes/OIG-ybw7TnotO-transformed1-removebg.png" alt="Logo Montañita" class="logo">
+                <img src="/static/imagenes/logo.webp" alt="Logo Montañita" class="logo">
                 <h2>¡Bienvenido a Montañita Adopta!</h2>
             </div>
             <div class="welcome-body">
@@ -64,7 +64,7 @@
         <div class="carousel-inner">
             {% for image in range(1, 9) %}
             <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                <img src="{{ url_for('static', filename='imagenes/' + image|string + '.jpeg') }}" class="d-block w-100" alt="Imagen {{ image }}">
+                <img src="{{ url_for('static', filename='imagenes/' + image|string + '.webp') }}" class="d-block w-100" alt="Imagen {{ image }}">
                 <div class="carousel-caption d-none d-md-block">
                     <h5>Título {{ image }}</h5>
                     <p>Texto descriptivo para la imagen {{ image }}.</p>
@@ -213,7 +213,7 @@
         <div class="testimonials-container">
             <div class="testimonial-card">
                 <div class="testimonial-image">
-                    <img src="/static/imagenes/maria" alt="Foto de María">
+                    <img src="/static/imagenes/maria.webp" alt="Foto de María">
                 </div>
                 <div class="testimonial-content">
                     <p>"Adoptar a Luna fue la mejor decisión que tomamos. El proceso fue sencillo y el equipo de Montañita Adopta nos guió en cada paso."</p>
@@ -230,7 +230,7 @@
             
             <div class="testimonial-card">
                 <div class="testimonial-image">
-                    <img src="/static/imagenes/carlos" alt="Foto de Carlos">
+                    <img src="/static/imagenes/carlos.webp" alt="Foto de Carlos">
                 </div>
                 <div class="testimonial-content">
                     <p>"Max se ha convertido en parte indispensable de nuestra familia. Gracias a Montañita Adopta por ayudarnos a encontrarlo."</p>
@@ -247,7 +247,7 @@
             
             <div class="testimonial-card">
                 <div class="testimonial-image">
-                    <img src="/static/imagenes/ana" alt="Foto de Ana">
+                    <img src="/static/imagenes/ana.webp" alt="Foto de Ana">
                 </div>
                 <div class="testimonial-content">
                     <p>"El proceso de adopción fue rápido y profesional. Nuestro gatito Simón ha traído tanta alegría a nuestro hogar."</p>

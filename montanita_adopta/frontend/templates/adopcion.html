@@ -6,6 +6,7 @@
     <title>Adopciones</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/adopciones.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/veterinary-services.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/registro.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/seccion_animales.css') }}">
@@ -130,6 +131,148 @@
         </div>
     </div>
 
+    <!-- Modified Veterinary Services Section with "Reservar Cita" buttons and prices -->
+    <section class="veterinary-services-section">
+        <div class="container">
+            <h2>SERVICIOS VETERINARIOS</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-syringe"></i>
+                    </div>
+                    <h3>Vacunación</h3>
+                    <p>Protege la salud de tu nueva mascota con nuestras vacunas completas.</p>
+                    <p><strong>Precio: </strong><span class="service-price">Cargando...</span></p>
+                    <button class="service-btn info-btn">Más Información</button>
+                    <button class="service-btn reserve-btn" data-service="Vacunación">Reservar Cita</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h3>Consulta General</h3>
+                    <p>Revisión completa de salud para garantizar el bienestar de tu mascota.</p>
+                    <p><strong>Precio: </strong><span class="service-price">Cargando...</span></p>
+                    <button class="service-btn info-btn">Más Información</button>
+                    <button class="service-btn reserve-btn" data-service="Consulta General">Reservar Cita</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                    <h3>Esterilización</h3>
+                    <p>Servicios de esterilización seguros y profesionales.</p>
+                    <p><strong>Precio: </strong><span class="service-price">Cargando...</span></p>
+                    <button class="service-btn info-btn">Más Información</button>
+                    <button class="service-btn reserve-btn" data-service="Esterilización">Reservar Cita</button>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-first-aid"></i>
+                    </div>
+                    <h3>Primeros Auxilios</h3>
+                    <p>Atención inmediata y cuidados de emergencia para tu mascota.</p>
+                    <p><strong>Precio: </strong><span class="service-price">Cargando...</span></p>
+                    <button class="service-btn info-btn">Más Información</button>
+                    <button class="service-btn reserve-btn" data-service="Primeros Auxilios">Reservar Cita</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de ubicación utilizando el formato existente -->
+        <div class="vet-location-container mt-5">
+            <div class="container">
+                <h3>NUESTRA UBICACIÓN</h3>
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-map-marker-alt me-2"></i> Ubicación de la Veterinaria
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Dirección:</strong> carrera 5 calle 8a #04, barrio guillermo escobar</p>
+                                <p><strong>Horarios de atención:</strong> Lunes a Viernes de 9:00 AM a 5:00 PM</p>
+                                <p><strong>Teléfono:</strong> 3166532433</p>
+                                <!-- Botones alternativos para abrir mapas externos -->
+                                <div class="mt-3">
+                                    <p class="mb-2 small">También puedes encontrarnos en:</p>
+                                    <a href="https://maps.apple.com/?ll=1.482825,-75.435075&q=Montañita+Adopta" class="btn btn-sm btn-outline-secondary me-2" target="_blank">
+                                        <i class="fab fa-apple me-1"></i> Apple Maps
+                                    </a>
+                                    <a href="https://www.google.com/maps?q=1.482825,-75.435075" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                        <i class="fab fa-google me-1"></i> Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="map-container">
+                                    <!-- Google Maps iframe con las coordenadas exactas -->
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.7971416573864!2d-75.435075!3d1.482825!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcKwMjgnNTguMiJOIDc1wrAyNicwNi4zIlc!5e0!3m2!1ses!2sco!4v1710619500000!5m2!1ses!2sco" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Reserva de Cita -->
+    <div id="reservationModal" class="modal">
+        <div class="modal-content reservation-modal">
+            <span class="close" onclick="closeModal('reservationModal')">&times;</span>
+            <h2>Reservar Cita <span id="service-type"></span></h2>
+            <form id="reservation-form">
+                <input type="hidden" id="service-input" name="service">
+                <input type="hidden" id="service-id-input" name="serviceId">
+                
+                <div class="form-group">
+                    <label for="pet-owner">Nombre del Propietario:</label>
+                    <input type="text" id="pet-owner" name="petOwner" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pet-name">Nombre de la Mascota:</label>
+                    <input type="text" id="pet-name" name="petName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pet-type">Tipo de Mascota:</label>
+                    <select id="pet-type" name="petType" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="dog">Perro</option>
+                        <option value="cat">Gato</option>
+                        <option value="other">Otro</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointment-date">Fecha de la Cita:</label>
+                    <input type="date" id="appointment-date" name="appointmentDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointment-time">Hora de la Cita:</label>
+                    <select id="appointment-time" name="appointmentTime" required>
+                        <option value="">Seleccionar...</option>
+                        <!-- Las horas se cargarán dinámicamente con JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notas adicionales:</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                
+                <div id="reservation-message" style="display: none;"></div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn">Confirmar Reserva</button>
+                    <button type="button" class="secondary-btn" onclick="closeModal('reservationModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
 </main>
 
@@ -144,6 +287,7 @@
 <script src="{{ url_for('static', filename='js/api_connector.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/perfil_menu.js') }}"></script>
 <script src="{{ url_for('static', filename='js/carrusel_adopcion.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/veterinary-services.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/paginaAdopcion.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/seccion_animales.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/sesionRedes.js') }}" defer></script>

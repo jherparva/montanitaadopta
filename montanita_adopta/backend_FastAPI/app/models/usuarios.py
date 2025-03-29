@@ -20,6 +20,8 @@ class Usuario(Base):
     jwt = Column(String(200))
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     updated_at = Column(TIMESTAMP, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
+    foto_perfil = Column(String, default="/static/imagenes/default-profile.webp")
+    vet_reservations = relationship("VeterinaryReservation", back_populates="user")
 
     @property
     def edad(self):
@@ -30,3 +32,4 @@ class Usuario(Base):
                 (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
             )
         return None
+

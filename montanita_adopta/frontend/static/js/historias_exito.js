@@ -21,7 +21,14 @@ async function loadApprovedStories() {
             const storyDiv = document.createElement("div");
             storyDiv.classList.add("story");
             storyDiv.setAttribute("data-id", story.id);
+            
+            // Añadir imagen si está disponible
+            const imageHtml = story.image_url 
+                ? `<img src="${story.image_url}" alt="Imagen de historia" class="story-image">`
+                : '';
+            
             storyDiv.innerHTML = `
+                ${imageHtml}
                 <p class="story-preview">${story.preview}</p>
                 <p class="story-full" style="display: none;">${story.full_story}</p>
                 <button class="expand-story" onclick="toggleStory(${story.id})">Leer más</button>
@@ -47,13 +54,48 @@ function toggleStory(id) {
     }
 }
 
-// 📝 Envío de historias con validación
+// 📝 Subir imagen
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+        const response = await fetch("/adoptme/api/v1/success_stories/upload_image/", {
+            method: "POST",
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error("Error al subir la imagen");
+        }
+        
+        const data = await response.json();
+        return data.image_url; // Devuelve la URL de la imagen subida
+    } catch (error) {
+        console.error("Error al subir imagen:", error);
+        throw error;
+    }
+}
+
+// 📝 Envío de historias con validación y soporte para imagen
 function initStorySubmission() {
     const storyForm = document.getElementById("storyForm");
     if (!storyForm) return;
 
     const submissionMessage = document.getElementById("submissionMessage");
     if (!submissionMessage) return;
+
+    // Añadir input para imagen
+    const imageInput = document.createElement("input");
+    imageInput.type = "file";
+    imageInput.id = "storyImage";
+    imageInput.accept = "image/*";
+    imageInput.style.display = "block";
+    imageInput.style.margin = "10px 0";
+    
+    // Insertar input de imagen antes del botón de submit
+    const submitButton = storyForm.querySelector('button[type="submit"]');
+    submitButton.parentNode.insertBefore(imageInput, submitButton);
 
     storyForm.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -64,13 +106,27 @@ function initStorySubmission() {
             return;
         }
     
-        // Extraer los datos del formulario manualmente
+        // Extraer los datos del formulario
         const data = {
             title: document.getElementById("title").value.trim(),
             content: document.getElementById("story").value.trim(),
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim()
         };
     
         try {
+            // Subir imagen si está presente
+            let imageUrl = null;
+            const imageFile = document.getElementById("storyImage").files[0];
+            if (imageFile) {
+                imageUrl = await uploadImage(imageFile);
+            }
+    
+            // Añadir URL de imagen a los datos si existe
+            if (imageUrl) {
+                data.image_url = imageUrl;
+            }
+    
             const response = await apiConnector.post("success_stories", data);
             
             submissionMessage.textContent = "✅ Tu historia ha sido enviada para revisión.";
@@ -89,6 +145,7 @@ function initStorySubmission() {
     });    
 }
 
+// Video gallery functionality (existing code)
 document.addEventListener("DOMContentLoaded", function() {
     const videoButtons = document.querySelectorAll('.video-btn');
     const videoPlayer = document.querySelector('.video-gallery video');

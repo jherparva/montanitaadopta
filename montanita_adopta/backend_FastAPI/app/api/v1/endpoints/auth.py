@@ -1,14 +1,18 @@
 # Importaciones necesarias
 from pydantic import BaseModel, EmailStr
 from app.auth.gettoken import verify_token
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.starlette_client import OAuth
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2 import id_token
 from fastapi.responses import JSONResponse
+from PIL import Image
 import os
+import uuid
+import io
+import shutil
 import smtplib
 from email.mime.text import MIMEText
 from datetime import timedelta
@@ -399,4 +403,71 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "usuario_id": user.id,
         "nombre": user.nombre
+    }
+
+@router.post("/update-profile-photo")
+async def update_profile_photo(
+    photo: UploadFile = File(...), 
+    current_user: dict = Depends(verify_token), 
+    db: Session = Depends(get_db)
+):
+    # Validate file type
+    if not photo.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
+    
+    # Read the image file
+    image = Image.open(photo.file)
+    
+    # Check image resolution
+    max_resolution = 2000  # Maximum allowed resolution (width or height)
+    max_file_size = 5 * 1024 * 1024  # 5MB
+    
+    # Check file size
+    photo.file.seek(0, os.SEEK_END)
+    file_size = photo.file.tell()
+    photo.file.seek(0)
+    
+    if file_size > max_file_size:
+        raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
+    
+    # Check image resolution
+    width, height = image.size
+    if width > max_resolution or height > max_resolution:
+        # Resize image while maintaining aspect ratio
+        ratio = min(max_resolution / width, max_resolution / height)
+        new_width = int(width * ratio)
+        new_height = int(height * ratio)
+        
+        # Resize image
+        image = image.resize((new_width, new_height), Image.LANCZOS)
+    
+    # Generate unique filename
+    file_extension = photo.filename.split('.')[-1].lower()
+    filename = f"{current_user['sub']}_{uuid.uuid4()}.{file_extension}"
+    filepath = os.path.join("static/profile_photos", filename)
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    
+    # Save resized image
+    image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
+    
+    # Create a byte stream to save the image
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format=image_format, optimize=True, quality=85)
+    img_byte_arr.seek(0)
+    
+    # Write the image to file
+    with open(filepath, "wb") as buffer:
+        buffer.write(img_byte_arr.getvalue())
+    
+    # Update user's profile photo in database
+    user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
+    user.foto_perfil = f"/static/profile_photos/{filename}"
+    db.commit()
+    
+    return {
+        "success": True, 
+        "photoUrl": user.foto_perfil,
+        "message": "Foto de perfil actualizada exitosamente"
     }

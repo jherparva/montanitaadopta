@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from enum import Enum
 
@@ -10,6 +10,9 @@ class SuccessStoryBase(BaseModel):
     title: str
     content: str
     status: Optional[StoryStatus] = "pendiente"
+    name: Optional[str] = None  # Añadir campo name
+    email: Optional[str] = None  # Añadir campo email
+    image_url: Optional[str] = None  # Añadir campo para URL de imagen
 
 class SuccessStoryCreate(SuccessStoryBase):
     pass
