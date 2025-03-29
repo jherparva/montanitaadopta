@@ -411,63 +411,83 @@ async def update_profile_photo(
     current_user: dict = Depends(verify_token), 
     db: Session = Depends(get_db)
 ):
-    # Validate file type
-    if not photo.content_type.startswith('image/'):
-        raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
-    
-    # Read the image file
-    image = Image.open(photo.file)
-    
-    # Check image resolution
-    max_resolution = 2000  # Maximum allowed resolution (width or height)
-    max_file_size = 5 * 1024 * 1024  # 5MB
-    
-    # Check file size
-    photo.file.seek(0, os.SEEK_END)
-    file_size = photo.file.tell()
-    photo.file.seek(0)
-    
-    if file_size > max_file_size:
-        raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
-    
-    # Check image resolution
-    width, height = image.size
-    if width > max_resolution or height > max_resolution:
-        # Resize image while maintaining aspect ratio
-        ratio = min(max_resolution / width, max_resolution / height)
-        new_width = int(width * ratio)
-        new_height = int(height * ratio)
+    try:
+        # Validación básica
+        if not photo.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
         
-        # Resize image
-        image = image.resize((new_width, new_height), Image.LANCZOS)
+        # Leer contenido del archivo con límite de tamaño (5MB)
+        content = await photo.read(5 * 1024 * 1024)
+        if len(content) >= 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
+        
+        # Usar BytesIO para manipular la imagen en memoria
+        image_bytes = io.BytesIO(content)
+        try:
+            image = Image.open(image_bytes)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
+        
+        # Redimensionar la imagen si es necesario
+        max_resolution = 1000  # Reducido para minimizar uso de memoria
+        width, height = image.size
+        if width > max_resolution or height > max_resolution:
+            ratio = min(max_resolution / width, max_resolution / height)
+            new_width = int(width * ratio)
+            new_height = int(height * ratio)
+            image = image.resize((new_width, new_height), Image.LANCZOS)
+        
+        # Generar nombre de archivo
+        file_extension = photo.filename.split('.')[-1].lower()
+        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
+            file_extension = 'jpg'  # Formato por defecto
+        
+        filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        
+        # Usar /tmp para almacenamiento en Render
+        tmp_dir = "/tmp/profile_photos"
+        os.makedirs(tmp_dir, exist_ok=True)
+        filepath = os.path.join(tmp_dir, filename)
+        
+        # Guardar la imagen optimizada
+        image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
+        image.save(filepath, format=image_format, optimize=True, quality=85)
+        
+        # URL pública para la imagen 
+        public_url = f"/static/profile_photos/{filename}"
+        
+        # Copiar a la ubicación pública si es necesario
+        public_dir = "static/profile_photos"
+        os.makedirs(public_dir, exist_ok=True)
+        try:
+            shutil.copy(filepath, os.path.join(public_dir, filename))
+        except Exception as e:
+            # Si falla la copia, seguimos usando la URL temporal
+            print(f"Error al copiar a ubicación pública: {str(e)}")
+        
+        # Actualizar en la base de datos
+        try:
+            user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
+            if user:
+                user.foto_perfil = public_url
+                db.commit()
+        except Exception as db_error:
+            print(f"Error al actualizar la base de datos: {str(db_error)}")
+            # Revertimos si hay error en DB
+            raise HTTPException(status_code=500, detail="Error al actualizar el perfil")
+        
+        return {
+            "success": True, 
+            "photoUrl": public_url,
+            "message": "Foto de perfil actualizada exitosamente"
+        }
     
-    # Generate unique filename
-    file_extension = photo.filename.split('.')[-1].lower()
-    filename = f"{current_user['sub']}_{uuid.uuid4()}.{file_extension}"
-    filepath = os.path.join("static/profile_photos", filename)
-    
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    
-    # Save resized image
-    image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
-    
-    # Create a byte stream to save the image
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format=image_format, optimize=True, quality=85)
-    img_byte_arr.seek(0)
-    
-    # Write the image to file
-    with open(filepath, "wb") as buffer:
-        buffer.write(img_byte_arr.getvalue())
-    
-    # Update user's profile photo in database
-    user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
-    user.foto_perfil = f"/static/profile_photos/{filename}"
-    db.commit()
-    
-    return {
-        "success": True, 
-        "photoUrl": user.foto_perfil,
-        "message": "Foto de perfil actualizada exitosamente"
-    }
+    except HTTPException as http_ex:
+        # Reenviar excepciones HTTP
+        raise http_ex
+    except Exception as e:
+        # Capturar cualquier otra excepción
+        print(f"Error inesperado: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
