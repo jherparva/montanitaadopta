@@ -98,7 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return `${BASE_URL}${relativePath}`
     }
   
-    // Manejar el envío del formulario de foto de perfil
+    // Modificar la función de envío del formulario para incluir más información de depuración
+    // y asegurarse de que la imagen se está enviando correctamente
+  
+    // Reemplazar la función de envío del formulario con esta versión mejorada
     profilePhotoForm.addEventListener("submit", async (event) => {
       event.preventDefault()
   
@@ -114,7 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Crear FormData para enviar la imagen
       const formData = new FormData()
-      formData.append("photo", photoUpload.files[0])
+      const selectedFile = photoUpload.files[0]
+  
+      // Verificar el archivo seleccionado
+      console.log("Archivo seleccionado:", selectedFile.name, "Tipo:", selectedFile.type, "Tamaño:", selectedFile.size)
+  
+      // Añadir el archivo al FormData con el nombre correcto que espera el backend
+      formData.append("photo", selectedFile)
   
       try {
         // Mostrar indicador de carga
@@ -134,17 +143,23 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error("No se encontró el token de autenticación")
         }
   
+        console.log("Iniciando subida de imagen al servidor...")
+  
         // Enviar la solicitud con el token de autenticación
         const response = await fetch(`${BASE_URL}/adoptme/api/v1/auth/update-profile-photo`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+            // No incluir Content-Type para que el navegador establezca el boundary correcto para multipart/form-data
           },
           body: formData,
         })
   
+        // Verificar la respuesta HTTP
+        console.log("Respuesta del servidor:", response.status, response.statusText)
+  
         const data = await response.json()
-        console.log("Respuesta del servidor:", data)
+        console.log("Datos de respuesta:", data)
   
         if (!response.ok) {
           throw new Error(data.detail || "Error al actualizar la foto de perfil")
@@ -154,13 +169,15 @@ document.addEventListener("DOMContentLoaded", () => {
         let photoUrl = ""
         if (data.photoUrl) {
           photoUrl = getFullImageUrl(data.photoUrl)
+          console.log("URL de la foto (photoUrl):", photoUrl)
         } else if (data.foto_perfil) {
           photoUrl = getFullImageUrl(data.foto_perfil)
+          console.log("URL de la foto (foto_perfil):", photoUrl)
         }
   
-        console.log("URL de la foto actualizada:", photoUrl)
-  
         if (photoUrl) {
+          console.log("Actualizando interfaz con nueva foto:", photoUrl)
+  
           // Actualizar la foto en el menú de usuario
           if (mainProfilePhoto) {
             mainProfilePhoto.src = photoUrl
@@ -188,6 +205,15 @@ document.addEventListener("DOMContentLoaded", () => {
           } catch (e) {
             console.error("Error al actualizar datos en localStorage:", e)
           }
+  
+          // Forzar una recarga de la imagen para evitar caché
+          const timestamp = new Date().getTime()
+          const imgElements = document.querySelectorAll("img.profile-photo, #profile-photo, #current-profile-photo")
+          imgElements.forEach((img) => {
+            if (img.src.includes(photoUrl.split("?")[0])) {
+              img.src = `${photoUrl}?t=${timestamp}`
+            }
+          })
         } else {
           console.warn("No se recibió URL de foto de perfil en la respuesta")
         }
@@ -208,9 +234,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (window.apiConnector && typeof window.apiConnector.getUserData === "function") {
             window.apiConnector.getUserData()
           }
+  
+          // Forzar una recarga de la página para asegurarse de que se muestra la nueva imagen
+          // window.location.reload();
         }, 500)
       } catch (error) {
-        console.error("Error:", error)
+        console.error("Error al subir la imagen:", error)
   
         Swal.fire({
           icon: "error",
