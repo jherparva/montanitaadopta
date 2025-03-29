@@ -448,22 +448,32 @@ async def update_profile_photo(
         tmp_dir = "/tmp/profile_photos"
         os.makedirs(tmp_dir, exist_ok=True)
         filepath = os.path.join(tmp_dir, filename)
-        
+
         # Guardar la imagen optimizada
         image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
         image.save(filepath, format=image_format, optimize=True, quality=85)
-        
+
         # URL pública para la imagen 
         public_url = f"/static/profile_photos/{filename}"
-        
-        # Copiar a la ubicación pública si es necesario
-        public_dir = "static/profile_photos"
+
+        # Crear directorio público si no existe
+        public_dir = os.path.join(os.getcwd(), "static/profile_photos")
         os.makedirs(public_dir, exist_ok=True)
+        print(f"Directorio público: {public_dir}")
+
+        # Copiar a la ubicación pública
         try:
-            shutil.copy(filepath, os.path.join(public_dir, filename))
+            public_path = os.path.join(public_dir, filename)
+            print(f"Copiando de {filepath} a {public_path}")
+            shutil.copy(filepath, public_path)
+            print(f"Archivo copiado exitosamente a {public_path}")
         except Exception as e:
-            # Si falla la copia, seguimos usando la URL temporal
+            # Registrar el error detalladamente
             print(f"Error al copiar a ubicación pública: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            # Seguimos usando la URL temporal pero registramos el error
+            raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
         
         # Actualizar en la base de datos
         try:
@@ -490,3 +500,4 @@ async def update_profile_photo(
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
+

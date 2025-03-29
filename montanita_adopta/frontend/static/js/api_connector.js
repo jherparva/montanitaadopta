@@ -710,32 +710,18 @@ class APIConnector {
       return this.put("auth/update", userData)
     }
   
-    // Mejorar el método updateProfilePhoto para asegurar que la imagen se envía correctamente
-  
     /**
      * Actualiza la foto de perfil del usuario
      * @param {FormData} formData - FormData con la foto
      * @returns {Promise} - Promesa con los datos actualizados
      */
     async updateProfilePhoto(formData) {
-      // Verificar que formData contiene el archivo
-      if (formData.has("photo")) {
-        const file = formData.get("photo")
-        console.log("Archivo a subir:", file.name, "Tipo:", file.type, "Tamaño:", file.size)
-      } else {
-        console.error('Error: FormData no contiene el archivo "photo"')
-        throw new Error("No se encontró el archivo en el FormData")
-      }
-  
-      // Configurar los headers correctamente (sin Content-Type para multipart/form-data)
       const headers = {}
       if (this.token) {
         headers["Authorization"] = `Bearer ${this.token}`
       }
   
       try {
-        console.log("Enviando solicitud al endpoint:", `${this.baseURL}/auth/update-profile-photo`)
-  
         const response = await fetch(`${this.baseURL}/auth/update-profile-photo`, {
           method: "POST",
           headers: headers,
@@ -743,38 +729,22 @@ class APIConnector {
           credentials: "include",
         })
   
-        console.log("Respuesta del servidor:", response.status, response.statusText)
-  
         if (!response.ok) {
-          const errorData = await response.json()
-          console.error("Error del servidor:", errorData)
-          throw new Error(errorData.detail || `Error del servidor: ${response.status}`)
+          throw await this.handleError(response)
         }
   
         const data = await response.json()
-        console.log("Respuesta completa de updateProfilePhoto:", data)
+        console.log("Respuesta de updateProfilePhoto:", data)
   
         // Obtener la URL de la foto de perfil
         let photoUrl = ""
         if (data.photoUrl) {
           photoUrl = this.getFullImageUrl(data.photoUrl)
-          console.log("URL de la foto (photoUrl):", photoUrl)
         } else if (data.foto_perfil) {
           photoUrl = this.getFullImageUrl(data.foto_perfil)
-          console.log("URL de la foto (foto_perfil):", photoUrl)
         }
   
-        // Si no hay URL en la respuesta, intentar construirla a partir del nombre del archivo
-        if (!photoUrl && formData.has("photo")) {
-          const file = formData.get("photo")
-          const fileName = file.name
-          const userId = JSON.parse(localStorage.getItem("userData") || "{}").id
-          if (userId) {
-            const possiblePath = `/static/profile_photos/user_${userId}_${fileName.split(".")[0]}.${fileName.split(".").pop()}`
-            photoUrl = this.getFullImageUrl(possiblePath)
-            console.log("URL construida manualmente:", photoUrl)
-          }
-        }
+        console.log("URL de la foto procesada:", photoUrl)
   
         // Actualizar datos en localStorage
         if (photoUrl) {
@@ -786,15 +756,6 @@ class APIConnector {
           if (typeof window.updateProfilePhotoUI === "function") {
             window.updateProfilePhotoUI(photoUrl)
           }
-  
-          // Forzar una recarga de la imagen para evitar caché
-          const timestamp = new Date().getTime()
-          const imgElements = document.querySelectorAll("img.profile-photo, #profile-photo, #current-profile-photo")
-          imgElements.forEach((img) => {
-            if (img.src.includes(photoUrl.split("?")[0])) {
-              img.src = `${photoUrl}?t=${timestamp}`
-            }
-          })
         }
   
         return data
@@ -843,10 +804,10 @@ class APIConnector {
             text: response.message || "Si el correo está registrado, recibirás un código de recuperación",
             confirmButtonText: "Continuar",
           }).then(() => {
-            this.closeModal("resetPasswordModal")
+            closeModal("resetPasswordModal")
             // Pre-llenar el correo en el modal de verificación
             document.getElementById("verify-email").value = email
-            this.openModal("verifyCodeModal")
+            openModal("verifyCodeModal")
           })
         } catch (error) {
           Swal.fire({
@@ -1044,5 +1005,6 @@ class APIConnector {
   
   // Crear una instancia global
   const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
+  </merged apiConnector = new APIConnector('https://montanitaadopta.onrender.com/adoptme/api/v1')
   
   

@@ -94,17 +94,11 @@
     }
   })
   
-  // Mejorar la función updateProfilePhotoUI para forzar la recarga de la imagen
-  
   // Función para actualizar la foto de perfil en la UI
   function updateProfilePhotoUI(photoUrl) {
     if (!photoUrl) return
   
     console.log("Actualizando foto de perfil en UI con URL:", photoUrl)
-  
-    // Añadir timestamp para evitar caché
-    const timestamp = new Date().getTime()
-    const urlWithTimestamp = photoUrl.includes("?") ? `${photoUrl}&t=${timestamp}` : `${photoUrl}?t=${timestamp}`
   
     // Actualizar todas las instancias de la foto de perfil
     const profilePhotos = [
@@ -116,26 +110,9 @@
     profilePhotos.forEach((photo) => {
       if (photo) {
         console.log("Actualizando elemento:", photo)
-  
-        // Crear una nueva imagen para forzar la recarga
-        const newImg = new Image()
-        newImg.onload = () => {
-          photo.src = urlWithTimestamp
-        }
-        newImg.src = urlWithTimestamp
+        photo.src = photoUrl
       }
     })
-  
-    // Verificar si las imágenes se están cargando correctamente
-    setTimeout(() => {
-      profilePhotos.forEach((photo) => {
-        if (photo && !photo.complete) {
-          console.warn("La imagen no se cargó correctamente:", photo)
-          // Intentar cargar de nuevo
-          photo.src = urlWithTimestamp
-        }
-      })
-    }, 1000)
   
     console.log("Interfaz de usuario actualizada con la nueva foto de perfil")
   }
