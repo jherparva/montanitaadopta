@@ -55,6 +55,24 @@ class APIConnector {
     }
   
     /**
+     * Función para construir la URL completa de la imagen
+     * @param {string} relativePath - Ruta relativa de la imagen
+     * @returns {string} - URL completa de la imagen
+     */
+    getFullImageUrl(relativePath) {
+      if (!relativePath) return ""
+  
+      // Si ya es una URL completa, devolverla tal cual
+      if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+        return relativePath
+      }
+  
+      // Si es una ruta relativa, añadir la URL base
+      const baseUrl = this.baseURL.split("/adoptme/api/v1")[0] // Obtener solo la parte del dominio
+      return `${baseUrl}${relativePath}`
+    }
+  
+    /**
      * Realiza una petición GET
      * @param {string} endpoint - Endpoint de la API
      * @param {Object} params - Parámetros de la consulta
@@ -294,7 +312,8 @@ class APIConnector {
   
         // Actualizar la foto de perfil en la UI si existe
         if (userData.foto_perfil && typeof window.updateProfilePhotoUI === "function") {
-          window.updateProfilePhotoUI(userData.foto_perfil)
+          const photoUrl = this.getFullImageUrl(userData.foto_perfil)
+          window.updateProfilePhotoUI(photoUrl)
         }
   
         // Mostrar alerta de bienvenida bonita
@@ -398,6 +417,11 @@ class APIConnector {
           // Calcular la edad a partir de la fecha de nacimiento
           if (userData.fecha_nacimiento) {
             userData.edad = this.calcularEdad(userData.fecha_nacimiento)
+          }
+  
+          // Procesar la URL de la foto de perfil
+          if (userData.foto_perfil) {
+            userData.foto_perfil = this.getFullImageUrl(userData.foto_perfil)
           }
   
           localStorage.setItem("userData", JSON.stringify(userData))
@@ -686,9 +710,6 @@ class APIConnector {
       return this.put("auth/update", userData)
     }
   
-    // Añade un nuevo método para actualizar la foto de perfil en la clase APIConnector
-    // Añade este método después del método updateUserData
-  
     /**
      * Actualiza la foto de perfil del usuario
      * @param {FormData} formData - FormData con la foto
@@ -713,16 +734,28 @@ class APIConnector {
         }
   
         const data = await response.json()
+        console.log("Respuesta de updateProfilePhoto:", data)
+  
+        // Obtener la URL de la foto de perfil
+        let photoUrl = ""
+        if (data.photoUrl) {
+          photoUrl = this.getFullImageUrl(data.photoUrl)
+        } else if (data.foto_perfil) {
+          photoUrl = this.getFullImageUrl(data.foto_perfil)
+        }
+  
+        console.log("URL de la foto procesada:", photoUrl)
   
         // Actualizar datos en localStorage
-        if (data.foto_perfil || data.photoUrl) {
-          const photoUrl = data.foto_perfil || data.photoUrl
+        if (photoUrl) {
           const userData = JSON.parse(localStorage.getItem("userData") || "{}")
           userData.foto_perfil = photoUrl
           localStorage.setItem("userData", JSON.stringify(userData))
   
           // Actualizar elementos de la UI
-          this.updateProfilePhotoUI(photoUrl)
+          if (typeof window.updateProfilePhotoUI === "function") {
+            window.updateProfilePhotoUI(photoUrl)
+          }
         }
   
         return data
@@ -730,29 +763,6 @@ class APIConnector {
         console.error("Error al actualizar foto de perfil:", error)
         throw error
       }
-    }
-  
-    /**
-     * Actualiza la UI con la nueva foto de perfil
-     * @param {string} photoUrl - URL de la foto de perfil
-     */
-    updateProfilePhotoUI(photoUrl) {
-      if (!photoUrl) return
-  
-      // Actualizar todas las instancias de la foto de perfil
-      const profilePhotos = [
-        document.getElementById("profile-photo"),
-        document.getElementById("current-profile-photo"),
-        ...Array.from(document.querySelectorAll(".profile-photo")),
-      ]
-  
-      profilePhotos.forEach((photo) => {
-        if (photo) {
-          photo.src = photoUrl
-        }
-      })
-  
-      console.log("Interfaz de usuario actualizada con la nueva foto de perfil")
     }
   
     /**
@@ -847,7 +857,7 @@ class APIConnector {
       }
   
       try {
-        const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/me", {
+        const response = await fetch(`${this.baseURL}/auth/me`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -866,9 +876,15 @@ class APIConnector {
         const data = await response.json()
         console.log("✅ Datos del usuario autenticado:", data)
   
-        // Actualizar la foto de perfil en la UI si existe
-        if (data.foto_perfil && typeof window.updateProfilePhotoUI === "function") {
-          window.updateProfilePhotoUI(data.foto_perfil)
+        // Procesar la URL de la foto de perfil
+        if (data.foto_perfil) {
+          data.foto_perfil = this.getFullImageUrl(data.foto_perfil)
+          console.log("🖼️ URL de la foto de perfil procesada:", data.foto_perfil)
+  
+          // Actualizar la foto de perfil en la UI
+          if (typeof window.updateProfilePhotoUI === "function") {
+            window.updateProfilePhotoUI(data.foto_perfil)
+          }
         }
   
         return data
@@ -989,5 +1005,6 @@ class APIConnector {
   
   // Crear una instancia global
   const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
+  </merged apiConnector = new APIConnector('https://montanitaadopta.onrender.com/adoptme/api/v1')
   
   

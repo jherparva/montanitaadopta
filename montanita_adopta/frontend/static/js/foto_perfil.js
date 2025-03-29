@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentProfilePhoto = document.getElementById("current-profile-photo")
     const mainProfilePhoto = document.getElementById("profile-photo")
   
+    // URL base del servidor
+    const BASE_URL = "https://montanitaadopta.onrender.com"
+  
     // Función para abrir el modal de foto de perfil
     window.openPhotoModal = () => {
       console.log("Opening photo modal")
@@ -82,6 +85,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   
+    // Función para construir la URL completa de la imagen
+    function getFullImageUrl(relativePath) {
+      if (!relativePath) return ""
+  
+      // Si ya es una URL completa, devolverla tal cual
+      if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+        return relativePath
+      }
+  
+      // Si es una ruta relativa, añadir la URL base
+      return `${BASE_URL}${relativePath}`
+    }
+  
     // Manejar el envío del formulario de foto de perfil
     profilePhotoForm.addEventListener("submit", async (event) => {
       event.preventDefault()
@@ -111,31 +127,15 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         })
   
-        // Usar el método de APIConnector si está disponible
-        if (window.apiConnector && typeof window.apiConnector.updateProfilePhoto === "function") {
-          const data = await window.apiConnector.updateProfilePhoto(formData)
-  
-          // Notificar éxito
-          Swal.fire({
-            icon: "success",
-            title: "¡Éxito!",
-            text: "Foto de perfil actualizada correctamente",
-          })
-  
-          // Cerrar el modal
-          closePhotoModal()
-  
-          return
-        }
-  
-        // Código de respaldo si apiConnector no está disponible
+        // Obtener el token de acceso del almacenamiento local
         const token = localStorage.getItem("token")
   
         if (!token) {
           throw new Error("No se encontró el token de autenticación")
         }
   
-        const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/update-profile-photo", {
+        // Enviar la solicitud con el token de autenticación
+        const response = await fetch(`${BASE_URL}/adoptme/api/v1/auth/update-profile-photo`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -144,16 +144,23 @@ document.addEventListener("DOMContentLoaded", () => {
         })
   
         const data = await response.json()
+        console.log("Respuesta del servidor:", data)
   
         if (!response.ok) {
           throw new Error(data.detail || "Error al actualizar la foto de perfil")
         }
   
-        // Actualizar las imágenes de perfil en la página
-        const photoUrl = data.foto_perfil || data.photoUrl
-        if (photoUrl) {
-          console.log("URL de la foto actualizada:", photoUrl)
+        // Obtener la URL de la foto de perfil
+        let photoUrl = ""
+        if (data.photoUrl) {
+          photoUrl = getFullImageUrl(data.photoUrl)
+        } else if (data.foto_perfil) {
+          photoUrl = getFullImageUrl(data.foto_perfil)
+        }
   
+        console.log("URL de la foto actualizada:", photoUrl)
+  
+        if (photoUrl) {
           // Actualizar la foto en el menú de usuario
           if (mainProfilePhoto) {
             mainProfilePhoto.src = photoUrl
@@ -181,6 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
           } catch (e) {
             console.error("Error al actualizar datos en localStorage:", e)
           }
+        } else {
+          console.warn("No se recibió URL de foto de perfil en la respuesta")
         }
   
         // Notificar éxito
@@ -192,6 +201,14 @@ document.addEventListener("DOMContentLoaded", () => {
   
         // Cerrar el modal
         closePhotoModal()
+  
+        // Actualizar la interfaz de usuario después de un breve retraso
+        setTimeout(() => {
+          // Recargar los datos del usuario para asegurarse de que todo esté actualizado
+          if (window.apiConnector && typeof window.apiConnector.getUserData === "function") {
+            window.apiConnector.getUserData()
+          }
+        }, 500)
       } catch (error) {
         console.error("Error:", error)
   
@@ -216,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
   
         // Obtener datos del usuario
-        const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/me", {
+        const response = await fetch(`${BASE_URL}/adoptme/api/v1/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -224,25 +241,54 @@ document.addEventListener("DOMContentLoaded", () => {
   
         if (!response.ok) {
           // Si hay un error (token inválido, etc.), mostrar menú de login
-          localStorage.removeItem("access_token")
+          localStorage.removeItem("token")
           document.getElementById("login-menu").style.display = "block"
           document.getElementById("user-menu").style.display = "none"
           return
         }
   
         const userData = await response.json()
+        console.log("Datos del usuario:", userData)
   
         // Mostrar el menú de usuario y ocultar el de login
         document.getElementById("login-menu").style.display = "none"
         document.getElementById("user-menu").style.display = "block"
   
         // Actualizar el nombre de usuario
-        document.getElementById("username-text").textContent = userData.nombre
+        const usernameElement = document.getElementById("username-text")
+        if (usernameElement) {
+          usernameElement.textContent = userData.nombre
+        }
   
         // Actualizar la foto de perfil si existe
         if (userData.foto_perfil) {
-          mainProfilePhoto.src = userData.foto_perfil
-          currentProfilePhoto.src = userData.foto_perfil
+          const photoUrl = getFullImageUrl(userData.foto_perfil)
+          console.log("URL de la foto de perfil:", photoUrl)
+  
+          if (mainProfilePhoto) {
+            mainProfilePhoto.src = photoUrl
+          }
+  
+          if (currentProfilePhoto) {
+            currentProfilePhoto.src = photoUrl
+          }
+  
+          // Actualizar cualquier otra instancia de la foto de perfil
+          const allProfilePhotos = document.querySelectorAll(".profile-photo")
+          if (allProfilePhotos.length > 0) {
+            allProfilePhotos.forEach((photo) => {
+              photo.src = photoUrl
+            })
+          }
+  
+          // Actualizar los datos del usuario en localStorage
+          try {
+            const storedUserData = JSON.parse(localStorage.getItem("userData") || "{}")
+            storedUserData.foto_perfil = photoUrl
+            localStorage.setItem("userData", JSON.stringify(storedUserData))
+          } catch (e) {
+            console.error("Error al actualizar datos en localStorage:", e)
+          }
         }
       } catch (error) {
         console.error("Error al cargar datos del usuario:", error)
@@ -256,23 +302,27 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUserUI()
   
     // Manejar cierre de sesión
-    document.getElementById("logout-button").addEventListener("click", (event) => {
-      event.preventDefault()
+    const logoutButton = document.getElementById("logout-button")
+    if (logoutButton) {
+      logoutButton.addEventListener("click", (event) => {
+        event.preventDefault()
   
-      // Eliminar el token de acceso
-      localStorage.removeItem("access_token")
+        // Eliminar el token de acceso
+        localStorage.removeItem("token")
+        localStorage.removeItem("userData")
   
-      // Actualizar UI
-      document.getElementById("login-menu").style.display = "block"
-      document.getElementById("user-menu").style.display = "none"
+        // Actualizar UI
+        document.getElementById("login-menu").style.display = "block"
+        document.getElementById("user-menu").style.display = "none"
   
-      // Notificar al usuario
-      Swal.fire({
-        icon: "success",
-        title: "Cerrar sesión",
-        text: "Has cerrado sesión correctamente",
+        // Notificar al usuario
+        Swal.fire({
+          icon: "success",
+          title: "Cerrar sesión",
+          text: "Has cerrado sesión correctamente",
+        })
       })
-    })
+    }
   })
   
   
