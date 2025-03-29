@@ -319,7 +319,7 @@ function handleProfilePhotoUpload(event) {
     }
     
     // Verificar token de autenticación
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('Token');
     if (!token) {
         showAlert('Debes iniciar sesión para cambiar tu foto de perfil', 'error');
         return;
@@ -334,7 +334,7 @@ function handleProfilePhotoUpload(event) {
     uploadButton.disabled = true;
     
     // Envío de foto al backend
-    fetch('/adoptme/api/v1/update-profile-photo', {
+    fetch('https://montanitaadopta.onrender.com/adoptme/api/v1/auth/update-profile-photo', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`
