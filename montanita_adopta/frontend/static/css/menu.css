@@ -267,8 +267,6 @@ nav {
     filter: brightness(1.2); /* Hace los iconos ligeramente más brillantes al pasar el cursor */
 }
 
-
-
 /* User profile specific styles */
 .user-profile-link {
     display: flex;
@@ -336,8 +334,8 @@ nav {
     display: none;
 }
 
-/* Photo Modal styles - renamed to avoid conflicts */
-.photo-profile-modal {
+/* Photo Modal styles - actualizado para coincidir con el HTML */
+#photoModal {
     display: none;
     position: fixed;
     z-index: 9999;
@@ -352,8 +350,9 @@ nav {
     transition: opacity 0.3s ease;
 }
 
-.photo-profile-modal.show {
+#photoModal.show {
     opacity: 1;
+    display: block;
 }
 
 .photo-modal-content {
@@ -370,7 +369,7 @@ nav {
     overflow: hidden;
 }
 
-.photo-profile-modal.show .photo-modal-content {
+#photoModal.show .photo-modal-content {
     transform: translateY(0);
     opacity: 1;
 }
@@ -578,7 +577,6 @@ input[type="file"] {
         display: block;
         transform: none;
     }
-    
     
     .submenu-link {
         padding: 8px; /* Reducido de 10px */
