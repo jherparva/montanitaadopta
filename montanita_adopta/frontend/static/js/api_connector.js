@@ -491,10 +491,10 @@ class APIConnector {
     }
   
     /**
-      /**
-   * Registra un nuevo usuario
-   * @param {Event} event - Evento del formulario
-   */
+        /**
+     * Registra un nuevo usuario
+     * @param {Event} event - Evento del formulario
+     */
     async registerHandler(event) {
       if (event) event.preventDefault()
   
@@ -1005,6 +1005,53 @@ class APIConnector {
   
   // Crear una instancia global
   const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
-  </merged apiConnector = new APIConnector('https://montanitaadopta.onrender.com/adoptme/api/v1')
+  
+  /**
+   * Función para actualizar la foto de perfil en la UI
+   * @param {string} photoUrl - URL de la foto de perfil
+   */
+  function updateProfilePhotoUI(photoUrl) {
+    if (!photoUrl) return
+  
+    // Añadir parámetro de tiempo para evitar caché
+    const noCacheUrl = `${photoUrl}?t=${new Date().getTime()}`
+  
+    console.log("Actualizando foto de perfil en UI con URL:", noCacheUrl)
+  
+    // Actualizar todas las instancias de la foto de perfil
+    const profilePhotos = [
+      document.getElementById("profile-photo"),
+      document.getElementById("current-profile-photo"),
+      ...Array.from(document.querySelectorAll(".profile-photo")),
+    ]
+  
+    profilePhotos.forEach((photo) => {
+      if (photo) {
+        console.log("Actualizando elemento:", photo)
+        photo.src = noCacheUrl
+  
+        // Forzar recarga de la imagen
+        photo.onload = () => {
+          console.log("Imagen cargada correctamente:", photo.src)
+        }
+        photo.onerror = () => {
+          console.error("Error al cargar la imagen:", photo.src)
+          // Intentar con la URL original sin caché como fallback
+          photo.src = photoUrl
+        }
+      }
+    })
+  
+    console.log("Interfaz de usuario actualizada con la nueva foto de perfil")
+  }
+  
+  // Hacer accesible la función globalmente
+  window.updateProfilePhotoUI = updateProfilePhotoUI
+  
+  // Declarar las variables globales
+  const Swal = window.Swal
+  const updateMenu = window.updateMenu
+  const closeModal = window.closeModal
+  const openModal = window.openModal
   
   

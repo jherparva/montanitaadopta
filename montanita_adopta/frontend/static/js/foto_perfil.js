@@ -165,35 +165,27 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error("No se recibió URL de foto de perfil en la respuesta")
         }
   
-        // Actualizar la foto en el menú de usuario
-        if (mainProfilePhoto) {
-          console.log("Actualizando foto principal:", photoUrl)
-          mainProfilePhoto.src = photoUrl
-        }
-  
-        // Actualizar la foto actual en el modal
-        if (currentProfilePhoto) {
-          console.log("Actualizando foto en modal:", photoUrl)
-          currentProfilePhoto.src = photoUrl
-        }
-  
-        // Actualizar cualquier otra instancia de la foto de perfil en la página
-        const allProfilePhotos = document.querySelectorAll(".profile-photo")
-        if (allProfilePhotos.length > 0) {
-          console.log(`Actualizando ${allProfilePhotos.length} instancias de fotos de perfil`)
-          allProfilePhotos.forEach((photo) => {
-            photo.src = photoUrl
-          })
-        }
-  
-        // Actualizar los datos del usuario en localStorage
+        // Verificar si la imagen existe antes de actualizar la UI
         try {
-          const userData = JSON.parse(localStorage.getItem("userData") || "{}")
-          userData.foto_perfil = photoUrl
-          localStorage.setItem("userData", JSON.stringify(userData))
-          console.log("Datos de usuario actualizados en localStorage")
-        } catch (e) {
-          console.error("Error al actualizar datos en localStorage:", e)
+          console.log("Verificando si la imagen existe:", photoUrl)
+          const imgTest = new Image()
+          imgTest.onload = () => {
+            console.log("✅ La imagen se cargó correctamente")
+            updateUIWithNewPhoto(photoUrl)
+          }
+          imgTest.onerror = () => {
+            console.error("❌ Error al cargar la imagen:", photoUrl)
+            // Intentar con un retraso para dar tiempo al servidor
+            setTimeout(() => {
+              console.log("Reintentando cargar la imagen después de un retraso...")
+              updateUIWithNewPhoto(photoUrl)
+            }, 2000)
+          }
+          imgTest.src = photoUrl
+        } catch (imgError) {
+          console.error("Error al verificar la imagen:", imgError)
+          // Continuar con la actualización de la UI de todos modos
+          updateUIWithNewPhoto(photoUrl)
         }
   
         // Notificar éxito
@@ -205,20 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
         // Cerrar el modal
         closePhotoModal()
-  
-        // Actualizar la interfaz de usuario después de un breve retraso
-        setTimeout(() => {
-          // Forzar una recarga de la imagen para evitar problemas de caché
-          if (mainProfilePhoto) {
-            const currentSrc = mainProfilePhoto.src
-            mainProfilePhoto.src = currentSrc + "?t=" + new Date().getTime()
-          }
-  
-          // Recargar los datos del usuario para asegurarse de que todo esté actualizado
-          if (window.apiConnector && typeof window.apiConnector.getUserData === "function") {
-            window.apiConnector.getUserData()
-          }
-        }, 500)
       } catch (error) {
         console.error("Error:", error)
   
@@ -229,6 +207,59 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       }
     })
+  
+    // Función para actualizar la UI con la nueva foto
+    function updateUIWithNewPhoto(photoUrl) {
+      console.log("Actualizando UI con la nueva foto:", photoUrl)
+  
+      // Añadir parámetro de tiempo para evitar caché
+      const noCacheUrl = `${photoUrl}?t=${new Date().getTime()}`
+  
+      // Actualizar la foto en el menú de usuario
+      if (mainProfilePhoto) {
+        console.log("Actualizando foto principal")
+        mainProfilePhoto.src = noCacheUrl
+      }
+  
+      // Actualizar la foto actual en el modal
+      if (currentProfilePhoto) {
+        console.log("Actualizando foto en modal")
+        currentProfilePhoto.src = noCacheUrl
+      }
+  
+      // Actualizar cualquier otra instancia de la foto de perfil en la página
+      const allProfilePhotos = document.querySelectorAll(".profile-photo")
+      if (allProfilePhotos.length > 0) {
+        console.log(`Actualizando ${allProfilePhotos.length} instancias de fotos de perfil`)
+        allProfilePhotos.forEach((photo) => {
+          photo.src = noCacheUrl
+        })
+      }
+  
+      // Actualizar los datos del usuario en localStorage
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}")
+        userData.foto_perfil = photoUrl // Guardar sin el parámetro de caché
+        localStorage.setItem("userData", JSON.stringify(userData))
+        console.log("Datos de usuario actualizados en localStorage")
+      } catch (e) {
+        console.error("Error al actualizar datos en localStorage:", e)
+      }
+  
+      // Actualizar la interfaz de usuario después de un breve retraso
+      setTimeout(() => {
+        // Recargar los datos del usuario para asegurarse de que todo esté actualizado
+        if (window.apiConnector && typeof window.apiConnector.getUserData === "function") {
+          window.apiConnector.getUserData()
+        }
+  
+        // Forzar una actualización de todas las imágenes
+        if (window.updateMenu && typeof window.updateMenu === "function") {
+          const userData = JSON.parse(localStorage.getItem("userData") || "{}")
+          window.updateMenu(userData)
+        }
+      }, 500)
+    }
   
     // Función para mostrar el nombre de usuario y la foto de perfil al cargar la página
     async function updateUserUI() {
