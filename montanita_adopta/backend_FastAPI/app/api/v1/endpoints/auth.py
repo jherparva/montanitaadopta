@@ -490,4 +490,3 @@ async def update_profile_photo(
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
