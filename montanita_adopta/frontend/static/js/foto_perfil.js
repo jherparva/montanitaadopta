@@ -10,20 +10,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para abrir el modal de foto de perfil
     window.openPhotoModal = function() {
+        console.log('Opening photo modal');
+        console.log('photoModal element:', photoModal);
+        
         // Mostrar la foto de perfil actual en el modal
         if (mainProfilePhoto && mainProfilePhoto.src) {
             currentProfilePhoto.src = mainProfilePhoto.src;
         }
         photoModal.style.display = 'block';
+        
+        // Añadir un pequeño retraso para permitir que el navegador aplique el display: block
+        setTimeout(() => {
+            photoModal.classList.add('show');
+        }, 10);
     };
 
     // Función para cerrar el modal de foto de perfil
     window.closePhotoModal = function() {
-        photoModal.style.display = 'none';
-        // Limpiar la vista previa al cerrar
-        photoPreview.style.display = 'none';
-        photoPreview.src = '#';
-        photoUpload.value = '';
+        photoModal.classList.remove('show');
+        
+        // Esperar a que termine la transición de opacidad antes de ocultarlo
+        setTimeout(() => {
+            photoModal.style.display = 'none';
+            // Limpiar la vista previa al cerrar
+            photoPreview.style.display = 'none';
+            photoPreview.src = '#';
+            photoUpload.value = '';
+        }, 300); // 300ms coincide con la duración de la transición en CSS
     };
 
     // Cerrar el modal si se hace clic fuera del contenido
