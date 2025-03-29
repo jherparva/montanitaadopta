@@ -81,9 +81,37 @@ function updateLanguage(lang) {
             element.textContent = translations[lang][key];
         }
     });
+    
+    // Traducir atributos alt de imágenes
+    const altElements = document.querySelectorAll('[data-translate-alt]');
+    altElements.forEach(element => {
+        const key = element.getAttribute('data-translate-alt');
+        if (translations[lang] && translations[lang][key]) {
+            element.setAttribute('alt', translations[lang][key]);
+        }
+    });
 }
 
-// Modificar el código de event listeners para los enlaces de idioma
+// Actualizar visualización del selector de idiomas
+function updateLanguageDisplay(lang) {
+    const langSelector = document.querySelector('.language-selector');
+    if (langSelector) {
+        // Actualizar el texto del selector según el idioma seleccionado
+        switch (lang) {
+            case 'es':
+                langSelector.innerHTML = '<i class="fa-solid fa-globe"></i> ES <i class="fa-solid fa-chevron-down"></i>';
+                break;
+            case 'en':
+                langSelector.innerHTML = '<i class="fa-solid fa-globe"></i> EN <i class="fa-solid fa-chevron-down"></i>';
+                break;
+            case 'fr':
+                langSelector.innerHTML = '<i class="fa-solid fa-globe"></i> FR <i class="fa-solid fa-chevron-down"></i>';
+                break;
+        }
+    }
+}
+
+// Event listeners para los enlaces de idioma
 document.addEventListener('DOMContentLoaded', function() {
     // Detectar el idioma de la URL o del almacenamiento local
     const urlParams = new URLSearchParams(window.location.search);
@@ -109,14 +137,53 @@ document.addEventListener('DOMContentLoaded', function() {
             window.history.pushState({}, '', url);
         });
     });
+    
+    // Configurar eventos de subida de foto
+    const photoInput = document.getElementById('profile-photo-upload');
+    if (photoInput) {
+        photoInput.addEventListener('change', previewProfilePhoto);
+    }
+    
+    const photoForm = document.getElementById('profile-photo-form');
+    if (photoForm) {
+        photoForm.addEventListener('submit', handleProfilePhotoUpload);
+    }
+    
+    // Configurar hover del menú de usuario
+    setupUserMenuHover();
+    
+    // Mejorar visibilidad de submenús
+    const submenus = document.querySelectorAll('.has-submenu');
+    submenus.forEach(submenu => {
+        submenu.addEventListener('mouseenter', function() {
+            const submenuDropdown = this.querySelector('.submenu');
+            if (submenuDropdown) {
+                submenuDropdown.style.opacity = '1';
+                submenuDropdown.style.visibility = 'visible';
+            }
+        });
+        
+        submenu.addEventListener('mouseleave', function() {
+            const submenuDropdown = this.querySelector('.submenu');
+            if (submenuDropdown) {
+                submenuDropdown.style.opacity = '0';
+                submenuDropdown.style.visibility = 'hidden';
+            }
+        });
+    });
 });
 
 // Añadir atributos data-translate a los elementos que necesitan traducción
 function addTranslateAttributes() {
     // Menú principal
-    document.querySelector('a[href="/"]').setAttribute('data-translate', 'INICIO');
-    document.querySelector('a[href="/contacto"]').setAttribute('data-translate', 'CONTACTO');
-    document.querySelector('a[href="#"]:not(.language-selector)').setAttribute('data-translate', 'ADOPTA');
+    const homeLink = document.querySelector('a[href="/"]');
+    if (homeLink) homeLink.setAttribute('data-translate', 'INICIO');
+    
+    const contactLink = document.querySelector('a[href="/contacto"]');
+    if (contactLink) contactLink.setAttribute('data-translate', 'CONTACTO');
+    
+    const adoptLink = document.querySelector('.main-menu > li:nth-child(3) > a');
+    if (adoptLink) adoptLink.setAttribute('data-translate', 'ADOPTA');
     
     // Submenús
     const submenuItems = {
@@ -136,15 +203,28 @@ function addTranslateAttributes() {
             element.setAttribute('data-translate', translation);
         }
     }
-    
-    // Modal de foto
-    document.querySelector('div.photo-upload-container h2').setAttribute('data-translate', 'Cambiar foto de perfil');
-    document.querySelector('label[for="profile-photo-upload"]').setAttribute('data-translate', 'Seleccionar imagen');
-    document.querySelector('button.upload-button').setAttribute('data-translate', 'Guardar cambios');
-    document.querySelector('img#current-profile-photo').setAttribute('alt', 'Foto actual');
-    document.querySelector('img#current-profile-photo').setAttribute('data-translate-alt', 'Foto actual');
-    document.querySelector('img#photo-preview').setAttribute('alt', 'Vista previa');
-    document.querySelector('img#photo-preview').setAttribute('data-translate-alt', 'Vista previa');
+}
+
+// Función para configurar hover del menú de usuario
+function setupUserMenuHover() {
+    const userMenu = document.getElementById('user-menu');
+    if (userMenu) {
+        userMenu.addEventListener('mouseenter', function() {
+            const submenu = this.querySelector('.submenu');
+            if (submenu) {
+                submenu.style.opacity = '1';
+                submenu.style.visibility = 'visible';
+            }
+        });
+        
+        userMenu.addEventListener('mouseleave', function() {
+            const submenu = this.querySelector('.submenu');
+            if (submenu) {
+                submenu.style.opacity = '0';
+                submenu.style.visibility = 'hidden';
+            }
+        });
+    }
 }
 
 // Función para mostrar alertas
@@ -189,94 +269,6 @@ function showAlert(message, type) {
     }, 3000);
 }
 
-// Función para manejar la subida de foto de perfil
-function handleProfilePhotoUpload(event) {
-    event.preventDefault();
-    
-    const fileInput = document.getElementById('profile-photo-upload');
-    const photoPreview = document.getElementById('photo-preview');
-    
-    // Validar tamaño y tipo de archivo
-    if (!fileInput.files || fileInput.files.length === 0) {
-        showAlert('Por favor selecciona una imagen', 'error');
-        return;
-    }
-    
-    const file = fileInput.files[0];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    
-    if (file.size > maxSize) {
-        showAlert('El archivo es demasiado grande. Tamaño máximo: 5MB', 'error');
-        fileInput.value = '';
-        photoPreview.style.display = 'none';
-        return;
-    }
-    
-    if (!file.type.match('image.*')) {
-        showAlert('Solo se permiten imágenes (jpg, png, gif)', 'error');
-        fileInput.value = '';
-        photoPreview.style.display = 'none';
-        return;
-    }
-    
-    // Verificar token de autenticación
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        showAlert('Debes iniciar sesión para cambiar tu foto de perfil', 'error');
-        return;
-    }
-    
-    const formData = new FormData(event.target);
-    const uploadButton = document.querySelector('.upload-button');
-    const originalText = uploadButton.textContent;
-    
-    // Deshabilitar botón durante la subida
-    uploadButton.textContent = 'Subiendo...';
-    uploadButton.disabled = true;
-    
-    fetch('/api/update-profile-photo', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Actualizar todas las referencias de la foto de perfil
-            const profilePhotos = document.querySelectorAll('#profile-photo, #current-profile-photo');
-            profilePhotos.forEach(photo => {
-                photo.src = data.photoUrl + '?t=' + Date.now();
-            });
-            
-            // Cerrar modal y mostrar mensaje de éxito
-            closePhotoModal();
-            showAlert('Foto de perfil actualizada con éxito', 'success');
-            
-            // Limpiar formulario
-            event.target.reset();
-            photoPreview.style.display = 'none';
-        } else {
-            showAlert('Error al actualizar la foto: ' + (data.message || 'Error desconocido'), 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('Error al subir la imagen: ' + error.message, 'error');
-    })
-    .finally(() => {
-        // Restaurar botón
-        uploadButton.textContent = originalText;
-        uploadButton.disabled = false;
-    });
-}
-
 // Función para previsualizar la imagen de perfil
 function previewProfilePhoto() {
     const fileInput = document.getElementById('profile-photo-upload');
@@ -294,16 +286,17 @@ function previewProfilePhoto() {
     }
 }
 
-// Función mejorada para manejar la subida de foto de perfil
+// Función para manejar la subida de foto de perfil
 function handleProfilePhotoUpload(event) {
     event.preventDefault();
     
     const fileInput = document.getElementById('profile-photo-upload');
     const photoPreview = document.getElementById('photo-preview');
+    const currentLang = getCurrentLanguage();
     
     // Validaciones de archivo
     if (!fileInput.files || fileInput.files.length === 0) {
-        showAlert(translations[getCurrentLanguage()]['Error al subir la imagen'], 'error');
+        showAlert(translations[currentLang]['Error al subir la imagen'], 'error');
         return;
     }
     
@@ -364,18 +357,18 @@ function handleProfilePhotoUpload(event) {
             
             // Cerrar modal y mostrar mensaje de éxito
             closePhotoModal();
-            showAlert(translations[getCurrentLanguage()]['Foto de perfil actualizada con éxito'], 'success');
+            showAlert(translations[currentLang]['Foto de perfil actualizada con éxito'], 'success');
             
             // Limpiar formulario
             event.target.reset();
             photoPreview.style.display = 'none';
         } else {
-            showAlert('Error al actualizar la foto', 'error');
+            showAlert(translations[currentLang]['Error al actualizar la foto'], 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showAlert('Error al subir la imagen: ' + error.message, 'error');
+        showAlert(translations[currentLang]['Error al subir la imagen'] + ': ' + error.message, 'error');
     })
     .finally(() => {
         // Restaurar botón
@@ -389,74 +382,26 @@ function getCurrentLanguage() {
     return localStorage.getItem('selectedLanguage') || 'es';
 }
 
-// Eventos de inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    // Detectar y establecer idioma
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get('lang') || localStorage.getItem('selectedLanguage') || 'es';
-    updateLanguage(lang);
-    addTranslateAttributes();
-    
-    // Configurar eventos de idioma
-    const langLinks = document.querySelectorAll('.submenu a[href^="?lang="]');
-    langLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const selectedLang = this.href.split('=')[1];
-            updateLanguage(selectedLang);
-            
-            const url = new URL(window.location);
-            url.searchParams.set('lang', selectedLang);
-            window.history.pushState({}, '', url);
-        });
-    });
-    
-    // Configurar eventos de subida de foto
-    const photoInput = document.getElementById('profile-photo-upload');
-    if (photoInput) {
-        photoInput.addEventListener('change', previewProfilePhoto);
-    }
-    
-    const photoForm = document.getElementById('profile-photo-form');
-    if (photoForm) {
-        photoForm.addEventListener('submit', handleProfilePhotoUpload);
-    }
-    
-    // Configurar hover del menú de usuario
-    setupUserMenuHover();
-    
-    // Mejorar visibilidad de submenús
-    const submenus = document.querySelectorAll('.has-submenu');
-    submenus.forEach(submenu => {
-        submenu.addEventListener('mouseenter', function() {
-            const submenuDropdown = this.querySelector('.submenu');
-            if (submenuDropdown) {
-                submenuDropdown.style.opacity = '1';
-                submenuDropdown.style.visibility = 'visible';
-            }
-        });
-        
-        submenu.addEventListener('mouseleave', function() {
-            const submenuDropdown = this.querySelector('.submenu');
-            if (submenuDropdown) {
-                submenuDropdown.style.opacity = '0';
-                submenuDropdown.style.visibility = 'hidden';
-            }
-        });
-    });
-});
-
-// Funciones auxiliares
-function closePhotoModal() {
-    const modal = document.getElementById('photoModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
+// Función mejorada para abrir el modal de foto
 function openPhotoModal() {
     const modal = document.getElementById('photoModal');
     if (modal) {
         modal.style.display = 'block';
+        // Agregar la clase 'show' después de un pequeño retraso para activar la transición
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+    }
+}
+
+// Función mejorada para cerrar el modal de foto
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    if (modal) {
+        modal.classList.remove('show');
+        // Esperar a que termine la transición antes de ocultar
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
     }
 }
