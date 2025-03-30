@@ -41,7 +41,7 @@ class VeterinaryReservation(Base):
     
     # Relaciones
     service = relationship("VeterinaryService", back_populates="reservations")
-    user = relationship("Usuario", back_populates="vet_reservations")
+    usuario = relationship("Usuario", back_populates="vet_reservations")
 
 
 # Añade esta relación en el modelo de Usuario
