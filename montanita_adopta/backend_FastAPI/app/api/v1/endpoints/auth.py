@@ -405,111 +405,123 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "nombre": user.nombre
     }
 
+# Modificar la función update_profile_photo para mejorar el manejo de archivos
 @router.post("/update-profile-photo")
 async def update_profile_photo(
-    photo: UploadFile = File(...), 
-    current_user: dict = Depends(verify_token), 
-    db: Session = Depends(get_db)
+   photo: UploadFile = File(...), 
+   current_user: dict = Depends(verify_token), 
+   db: Session = Depends(get_db)
 ):
-    try:
-        # Validación básica
-        if not photo.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
-        
-        # Leer contenido del archivo con límite de tamaño (5MB)
-        content = await photo.read(5 * 1024 * 1024)
-        if len(content) >= 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
-        
-        # Usar BytesIO para manipular la imagen en memoria
-        image_bytes = io.BytesIO(content)
-        try:
-            image = Image.open(image_bytes)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
-        
-        # Redimensionar la imagen si es necesario
-        max_resolution = 1000  # Reducido para minimizar uso de memoria
-        width, height = image.size
-        if width > max_resolution or height > max_resolution:
-            ratio = min(max_resolution / width, max_resolution / height)
-            new_width = int(width * ratio)
-            new_height = int(height * ratio)
-            image = image.resize((new_width, new_height), Image.LANCZOS)
-        
-        # Generar nombre de archivo
-        file_extension = photo.filename.split('.')[-1].lower()
-        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
-            file_extension = 'jpg'  # Formato por defecto
-        
-        filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        
-        # Obtener la ruta absoluta del directorio raíz del proyecto
-        project_root = os.getcwd()
-        print(f"Directorio raíz del proyecto: {project_root}")
-        
-        # Crear directorio público si no existe (usando ruta absoluta)
-        public_dir = os.path.join(project_root, "static", "profile_photos")
-        os.makedirs(public_dir, exist_ok=True)
-        print(f"Directorio público creado/verificado: {public_dir}")
-        
-        # Ruta completa del archivo en el directorio público
-        public_path = os.path.join(public_dir, filename)
-        print(f"Ruta completa del archivo: {public_path}")
-        
-        # Guardar la imagen directamente en la ubicación pública
-        try:
-            image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
-            image.save(public_path, format=image_format, optimize=True, quality=85)
-            print(f"Imagen guardada exitosamente en: {public_path}")
-        except Exception as e:
-            print(f"Error al guardar la imagen: {str(e)}")
-            import traceback
-            print(traceback.format_exc())
-            raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
-        
-        # URL pública para la imagen
-        public_url = f"/static/profile_photos/{filename}"
-        
-        # Verificar que el archivo existe después de guardarlo
-        if not os.path.exists(public_path):
-            raise HTTPException(status_code=500, detail="El archivo no se guardó correctamente")
-        
-        # Actualizar en la base de datos
-        try:
-            user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
-            if user:
-                user.foto_perfil = public_url
-                db.commit()
-                print(f"Base de datos actualizada con URL: {public_url}")
-            else:
-                raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        except Exception as db_error:
-            print(f"Error al actualizar la base de datos: {str(db_error)}")
-            raise HTTPException(status_code=500, detail="Error al actualizar el perfil en la base de datos")
-        
-        # Verificar permisos del archivo
-        try:
-            import stat
-            current_permissions = os.stat(public_path).st_mode
-            os.chmod(public_path, current_permissions | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-            print(f"Permisos del archivo actualizados: {public_path}")
-        except Exception as perm_error:
-            print(f"Advertencia: No se pudieron cambiar los permisos del archivo: {str(perm_error)}")
-        
-        return {
-            "success": True, 
-            "photoUrl": public_url,
-            "message": "Foto de perfil actualizada exitosamente"
-        }
-    
-    except HTTPException as http_ex:
-        # Reenviar excepciones HTTP
-        raise http_ex
-    except Exception as e:
-        # Capturar cualquier otra excepción
-        print(f"Error inesperado: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+   try:
+       # Validación básica
+       if not photo.content_type.startswith('image/'):
+           raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
+       
+       # Leer contenido del archivo con límite de tamaño (5MB)
+       content = await photo.read(5 * 1024 * 1024)
+       if len(content) >= 5 * 1024 * 1024:
+           raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
+       
+       # Usar BytesIO para manipular la imagen en memoria
+       image_bytes = io.BytesIO(content)
+       try:
+           image = Image.open(image_bytes)
+       except Exception as e:
+           raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
+       
+       # Redimensionar la imagen si es necesario
+       max_resolution = 1000  # Reducido para minimizar uso de memoria
+       width, height = image.size
+       if width > max_resolution or height > max_resolution:
+           ratio = min(max_resolution / width, max_resolution / height)
+           new_width = int(width * ratio)
+           new_height = int(height * ratio)
+           image = image.resize((new_width, new_height), Image.LANCZOS)
+       
+       # Generar nombre de archivo
+       file_extension = photo.filename.split('.')[-1].lower()
+       if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
+           file_extension = 'jpg'  # Formato por defecto
+       
+       filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
+       
+       # Obtener la ruta absoluta del directorio raíz del proyecto
+       project_root = os.getcwd()
+       print(f"Directorio raíz del proyecto: {project_root}")
+       
+       # Crear directorio público si no existe (usando ruta absoluta)
+       public_dir = os.path.join(project_root, "static", "profile_photos")
+       os.makedirs(public_dir, exist_ok=True)
+       print(f"Directorio público creado/verificado: {public_dir}")
+       
+       # Ruta completa del archivo en el directorio público
+       public_path = os.path.join(public_dir, filename)
+       print(f"Ruta completa del archivo: {public_path}")
+       
+       # Guardar la imagen directamente en la ubicación pública
+       try:
+           image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
+           image.save(public_path, format=image_format, optimize=True, quality=85)
+           print(f"Imagen guardada exitosamente en: {public_path}")
+           
+           # Verificar que el archivo existe después de guardarlo
+           if not os.path.exists(public_path):
+               raise HTTPException(status_code=500, detail="El archivo no se guardó correctamente")
+           
+           # Establecer permisos de archivo para asegurar que sea accesible
+           try:
+               import stat
+               os.chmod(public_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+               print(f"Permisos del archivo actualizados: {public_path}")
+           except Exception as perm_error:
+               print(f"Advertencia: No se pudieron cambiar los permisos del archivo: {str(perm_error)}")
+               
+           # Forzar sincronización del sistema de archivos
+           try:
+               os.sync()
+               print("Sistema de archivos sincronizado")
+           except:
+               print("No se pudo sincronizar el sistema de archivos (no es crítico)")
+               
+       except Exception as e:
+           print(f"Error al guardar la imagen: {str(e)}")
+           import traceback
+           print(traceback.format_exc())
+           raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
+       
+       # URL pública para la imagen
+       public_url = f"/static/profile_photos/{filename}"
+       
+       # Actualizar en la base de datos
+       try:
+           user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
+           if user:
+               user.foto_perfil = public_url
+               db.commit()
+               print(f"Base de datos actualizada con URL: {public_url}")
+           else:
+               raise HTTPException(status_code=404, detail="Usuario no encontrado")
+       except Exception as db_error:
+           print(f"Error al actualizar la base de datos: {str(db_error)}")
+           raise HTTPException(status_code=500, detail="Error al actualizar el perfil en la base de datos")
+       
+       # Añadir un pequeño retraso para permitir que el sistema de archivos se actualice
+       import time
+       time.sleep(0.5)
+       
+       return {
+           "success": True, 
+           "photoUrl": public_url,
+           "message": "Foto de perfil actualizada exitosamente"
+       }
+   
+   except HTTPException as http_ex:
+       # Reenviar excepciones HTTP
+       raise http_ex
+   except Exception as e:
+       # Capturar cualquier otra excepción
+       print(f"Error inesperado: {str(e)}")
+       import traceback
+       print(traceback.format_exc())
+       raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 

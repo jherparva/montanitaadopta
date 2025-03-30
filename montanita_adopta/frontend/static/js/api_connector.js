@@ -1006,10 +1006,7 @@ class APIConnector {
   // Crear una instancia global
   const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
   
-  /**
-   * Función para actualizar la foto de perfil en la UI
-   * @param {string} photoUrl - URL de la foto de perfil
-   */
+  // Modificar la función updateProfilePhotoUI para mejorar el manejo de errores y reintentos
   function updateProfilePhotoUI(photoUrl) {
     if (!photoUrl) return
   
@@ -1025,22 +1022,60 @@ class APIConnector {
       ...Array.from(document.querySelectorAll(".profile-photo")),
     ]
   
-    profilePhotos.forEach((photo) => {
-      if (photo) {
-        console.log("Actualizando elemento:", photo)
-        photo.src = noCacheUrl
+    // Función para intentar cargar la imagen con reintentos
+    const loadImageWithRetry = (photo, url, maxRetries = 3, delay = 1000, currentRetry = 0) => {
+      if (!photo) return
   
-        // Forzar recarga de la imagen
-        photo.onload = () => {
-          console.log("Imagen cargada correctamente:", photo.src)
-        }
-        photo.onerror = () => {
-          console.error("Error al cargar la imagen:", photo.src)
-          // Intentar con la URL original sin caché como fallback
+      console.log(`Intentando cargar imagen (intento ${currentRetry + 1}/${maxRetries + 1}):`, url)
+  
+      // Establecer la imagen
+      photo.src = url
+  
+      // Manejar éxito
+      photo.onload = () => {
+        console.log("✅ Imagen cargada correctamente:", photo.src)
+      }
+  
+      // Manejar error con reintentos
+      photo.onerror = () => {
+        console.warn(`⚠️ Error al cargar la imagen (intento ${currentRetry + 1}/${maxRetries + 1}):`, url)
+  
+        if (currentRetry < maxRetries) {
+          console.log(`Reintentando en ${delay}ms...`)
+  
+          // Incrementar el parámetro de tiempo para evitar caché en cada reintento
+          const retryUrl = `${photoUrl}?t=${new Date().getTime()}`
+  
+          setTimeout(() => {
+            loadImageWithRetry(photo, retryUrl, maxRetries, delay * 1.5, currentRetry + 1)
+          }, delay)
+        } else {
+          console.error("❌ Error al cargar la imagen después de múltiples intentos:", url)
+          // Último intento: usar la URL original sin parámetros de caché
           photo.src = photoUrl
         }
       }
+    }
+  
+    // Aplicar a todas las fotos de perfil
+    profilePhotos.forEach((photo) => {
+      if (photo) {
+        console.log("Actualizando elemento:", photo)
+        loadImageWithRetry(photo, noCacheUrl)
+      }
     })
+  
+    // Actualizar datos en localStorage para asegurar consistencia
+    try {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}")
+      if (userData) {
+        userData.foto_perfil = photoUrl // Guardar sin el parámetro de caché
+        localStorage.setItem("userData", JSON.stringify(userData))
+        console.log("Datos de usuario actualizados en localStorage")
+      }
+    } catch (e) {
+      console.error("Error al actualizar datos en localStorage:", e)
+    }
   
     console.log("Interfaz de usuario actualizada con la nueva foto de perfil")
   }
