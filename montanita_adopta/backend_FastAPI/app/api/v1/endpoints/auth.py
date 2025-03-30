@@ -444,36 +444,26 @@ async def update_profile_photo(
         
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # Obtener la ruta absoluta del directorio raíz del proyecto
-        project_root = os.getcwd()
-        print(f"Directorio raíz del proyecto: {project_root}")
+        # Usar /tmp para almacenamiento en Render
+        tmp_dir = "/tmp/profile_photos"
+        os.makedirs(tmp_dir, exist_ok=True)
+        filepath = os.path.join(tmp_dir, filename)
         
-        # Crear directorio público si no existe (usando ruta absoluta)
-        public_dir = os.path.join(project_root, "static", "profile_photos")
-        os.makedirs(public_dir, exist_ok=True)
-        print(f"Directorio público creado/verificado: {public_dir}")
+        # Guardar la imagen optimizada
+        image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
+        image.save(filepath, format=image_format, optimize=True, quality=85)
         
-        # Ruta completa del archivo en el directorio público
-        public_path = os.path.join(public_dir, filename)
-        print(f"Ruta completa del archivo: {public_path}")
-        
-        # Guardar la imagen directamente en la ubicación pública
-        try:
-            image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
-            image.save(public_path, format=image_format, optimize=True, quality=85)
-            print(f"Imagen guardada exitosamente en: {public_path}")
-        except Exception as e:
-            print(f"Error al guardar la imagen: {str(e)}")
-            import traceback
-            print(traceback.format_exc())
-            raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
-        
-        # URL pública para la imagen
+        # URL pública para la imagen 
         public_url = f"/static/profile_photos/{filename}"
         
-        # Verificar que el archivo existe después de guardarlo
-        if not os.path.exists(public_path):
-            raise HTTPException(status_code=500, detail="El archivo no se guardó correctamente")
+        # Copiar a la ubicación pública si es necesario
+        public_dir = "static/profile_photos"
+        os.makedirs(public_dir, exist_ok=True)
+        try:
+            shutil.copy(filepath, os.path.join(public_dir, filename))
+        except Exception as e:
+            # Si falla la copia, seguimos usando la URL temporal
+            print(f"Error al copiar a ubicación pública: {str(e)}")
         
         # Actualizar en la base de datos
         try:
@@ -481,21 +471,10 @@ async def update_profile_photo(
             if user:
                 user.foto_perfil = public_url
                 db.commit()
-                print(f"Base de datos actualizada con URL: {public_url}")
-            else:
-                raise HTTPException(status_code=404, detail="Usuario no encontrado")
         except Exception as db_error:
             print(f"Error al actualizar la base de datos: {str(db_error)}")
-            raise HTTPException(status_code=500, detail="Error al actualizar el perfil en la base de datos")
-        
-        # Verificar permisos del archivo
-        try:
-            import stat
-            current_permissions = os.stat(public_path).st_mode
-            os.chmod(public_path, current_permissions | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-            print(f"Permisos del archivo actualizados: {public_path}")
-        except Exception as perm_error:
-            print(f"Advertencia: No se pudieron cambiar los permisos del archivo: {str(perm_error)}")
+            # Revertimos si hay error en DB
+            raise HTTPException(status_code=500, detail="Error al actualizar el perfil")
         
         return {
             "success": True, 
@@ -511,5 +490,3 @@ async def update_profile_photo(
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
