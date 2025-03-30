@@ -405,7 +405,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "nombre": user.nombre
     }
 
-# Modificar la función update_profile_photo para usar la ruta correcta
+# Modificar la función update_profile_photo para mejorar el manejo de archivos
 @router.post("/update-profile-photo")
 async def update_profile_photo(
    photo: UploadFile = File(...), 
@@ -449,9 +449,8 @@ async def update_profile_photo(
        project_root = os.getcwd()
        print(f"Directorio raíz del proyecto: {project_root}")
        
-       # CORREGIDO: Usar la ruta correcta para guardar las imágenes
        # Crear directorio público si no existe (usando ruta absoluta)
-       public_dir = os.path.join(project_root, "frontend", "static", "profile_photos")
+       public_dir = os.path.join(project_root, "static", "profile_photos")
        os.makedirs(public_dir, exist_ok=True)
        print(f"Directorio público creado/verificado: {public_dir}")
        
@@ -490,7 +489,7 @@ async def update_profile_photo(
            print(traceback.format_exc())
            raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
        
-       # URL pública para la imagen (mantener la misma estructura de URL)
+       # URL pública para la imagen
        public_url = f"/static/profile_photos/{filename}"
        
        # Actualizar en la base de datos
