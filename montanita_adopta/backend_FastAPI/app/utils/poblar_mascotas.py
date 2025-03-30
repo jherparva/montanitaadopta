@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.mascotas import Mascota
 from app.core.db import SessionLocal, Base, engine
 from sqlalchemy.exc import SQLAlchemyError
+import sqlalchemy as sa
 
 # Crear una sesión de base de datos
 db: Session = SessionLocal()
@@ -10,7 +11,20 @@ def reset_and_populate():
     try:
         print("🔄 Iniciando proceso de reinicio y repoblación de la base de datos")
         
-        # 1. Eliminar todas las mascotas actuales
+        # Check if adopciones table exists and has references
+        try:
+            # Check if table exists first
+            inspector = sa.inspect(engine)
+            if 'adopciones' in inspector.get_table_names():
+                # Execute raw SQL to delete adopciones first
+                db.execute(sa.text("DELETE FROM adopciones"))
+                db.commit()
+                print("🗑️ Se eliminaron registros de adopciones")
+        except Exception as e:
+            db.rollback()
+            print(f"ℹ️ Nota sobre adopciones: {str(e)}")
+        
+        # Now try to delete mascotas
         try:
             count = db.query(Mascota).delete()
             db.commit()
@@ -18,7 +32,18 @@ def reset_and_populate():
         except SQLAlchemyError as e:
             db.rollback()
             print(f"❌ Error al eliminar mascotas: {str(e)}")
-            return False
+            
+            # If error persists, try with raw SQL and disable triggers temporarily
+            try:
+                db.execute(sa.text("ALTER TABLE adopciones DISABLE TRIGGER ALL"))
+                db.execute(sa.text("DELETE FROM mascotas"))
+                db.execute(sa.text("ALTER TABLE adopciones ENABLE TRIGGER ALL"))
+                db.commit()
+                print("✅ Se eliminaron mascotas usando SQL directo")
+            except Exception as e2:
+                db.rollback()
+                print(f"❌ Error al eliminar con SQL directo: {str(e2)}")
+                return False
         
         # 2. Lista de mascotas para repoblar
         mascotas = [
@@ -105,3 +130,4 @@ def reset_and_populate():
 
 # Ejecutar la función
 reset_and_populate()
+
