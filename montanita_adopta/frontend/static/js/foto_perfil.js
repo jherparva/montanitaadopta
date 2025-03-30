@@ -165,11 +165,38 @@ document.addEventListener("DOMContentLoaded", () => {
   
           if (data.photoUrl) {
             // Construir la URL completa para la imagen
-            photoUrl = data.photoUrl.startsWith("http")
-              ? data.photoUrl
-              : new URL(data.photoUrl, window.location.origin).href
+            if (data.photoUrl.startsWith("http")) {
+              photoUrl = data.photoUrl
+            } else {
+              // Asegurarse de usar el dominio correcto
+              const apiDomain = "https://montanitaadopta.onrender.com"
+              photoUrl = data.photoUrl.startsWith("/") ? `${apiDomain}${data.photoUrl}` : `${apiDomain}/${data.photoUrl}`
+            }
   
             console.log("URL completa de la foto (backend):", photoUrl)
+            console.log("Intentando cargar imagen desde:", photoUrl)
+  
+            // Verificar si la imagen es accesible
+            const testImg = new Image()
+            testImg.onload = () => {
+              console.log("✅ Imagen cargada correctamente desde el servidor")
+            }
+            testImg.onerror = () => {
+              console.warn("⚠️ No se pudo cargar la imagen desde el servidor, usando versión local")
+              // Si no se puede cargar la imagen, usar la versión comprimida local
+              photoUrl = compressedDataURL
+  
+              // Actualizar la interfaz con la versión local
+              if (mainProfilePhoto) mainProfilePhoto.src = photoUrl
+              if (currentProfilePhoto) currentProfilePhoto.src = photoUrl
+  
+              // Actualizar localStorage
+              const userData = JSON.parse(localStorage.getItem("userData") || "{}")
+              userData.foto_perfil = photoUrl
+              localStorage.setItem("userData", JSON.stringify(userData))
+            }
+            testImg.src = photoUrl
+  
             backendSuccess = true
           }
         } catch (backendError) {
