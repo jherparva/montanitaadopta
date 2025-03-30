@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session 
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 import requests
 import jwt
 import time
@@ -21,6 +21,10 @@ Session(app)
 # URL de la API en producción
 API_URL = os.environ.get('API_URL', 'https://montanitaadopta.onrender.com/adoptme/api/v1/')
 
+# Crear directorio para imágenes temporales
+os.makedirs('temp_images', exist_ok=True)
+os.makedirs('static/profile_photos', exist_ok=True)
+
 def obtener_usuario_desde_sesion():
     """Obtiene el usuario autenticado desde la sesión haciendo una petición al backend."""
     token = session.get('token')
@@ -34,6 +38,7 @@ def obtener_usuario_desde_sesion():
         if response.status_code == 200:
             user_data = response.json()
             session['usuario_nombre'] = user_data.get('nombre', 'Usuario')
+            session['usuario_foto'] = user_data.get('foto_perfil', None)
             return user_data.get('nombre', 'Usuario')
         else:
             flash("Sesión no válida, inicia sesión nuevamente.", "error")
@@ -55,7 +60,8 @@ def login_required(f):
 @app.route('/')
 def index():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('index.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('index.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -81,6 +87,7 @@ def login():
                     if user_response.status_code == 200:
                         user_data = user_response.json()
                         session['usuario_nombre'] = user_data.get('nombre', 'Usuario')
+                        session['usuario_foto'] = user_data.get('foto_perfil')
                         
                     flash('Inicio de sesión exitoso', 'success')
                     return redirect(url_for('index'))
@@ -97,11 +104,14 @@ def login():
 @login_required
 def profile():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('index.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('index.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/logout')
 def logout():
     session.pop('token', None)  
+    session.pop('usuario_nombre', None)
+    session.pop('usuario_foto', None)
     flash('Has cerrado sesión', 'success')
     return redirect(url_for('index'))
 
@@ -149,11 +159,13 @@ def register():
 @app.route('/adopcion')
 def adopcion():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('adopcion.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('adopcion.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/formulario_adopcion')
 def formulario_adopcion():
     usuario_nombre = obtener_usuario_desde_sesion()
+    usuario_foto = session.get('usuario_foto')
     mascota_id = request.args.get('id', default=None, type=int)
 
     mascota = None  # Inicializar la variable
@@ -168,35 +180,73 @@ def formulario_adopcion():
         except requests.exceptions.RequestException:
             flash("Error al conectar con el servidor.", "error")
 
-    return render_template('formulario_adopcion.html', usuario_nombre=usuario_nombre, mascota=mascota)
+    return render_template('formulario_adopcion.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto, mascota=mascota)
 
 @app.route('/donaciones')
 def donaciones():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('donaciones.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('donaciones.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/donar', methods=['GET', 'POST'])
 @login_required
 def donar():
     usuario_nombre = obtener_usuario_desde_sesion()
+    usuario_foto = session.get('usuario_foto')
     if request.method == 'POST':
         return redirect(url_for('index'))
-    return render_template('donar.html', usuario_nombre=usuario_nombre)
+    return render_template('donar.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/voluntario')
 def voluntario():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('voluntario.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('voluntario.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/contacto')
 def contacto():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('contacto.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('contacto.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 @app.route('/historias_exito')
 def historias_exito():
     usuario_nombre = obtener_usuario_desde_sesion()
-    return render_template('historias_exito.html', usuario_nombre=usuario_nombre)
+    usuario_foto = session.get('usuario_foto')
+    return render_template('historias_exito.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
+
+# Ruta para servir imágenes de perfil desde el backend
+@app.route('/proxy/profile_photos/<path:filename>')
+def proxy_profile_photo(filename):
+    """
+    Proxy para obtener imágenes de perfil desde el backend
+    """
+    try:
+        # Construir la URL completa al backend
+        backend_url = f"https://montanitaadopta.onrender.com/static/profile_photos/{filename}"
+        
+        # Hacer una solicitud al backend para obtener la imagen
+        response = requests.get(backend_url, stream=True)
+        
+        if response.status_code == 200:
+            # Crear directorio temporal si no existe
+            os.makedirs('temp_images', exist_ok=True)
+            
+            # Guardar la imagen temporalmente
+            temp_path = os.path.join('temp_images', filename)
+            with open(temp_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            # Servir la imagen desde el directorio temporal
+            return send_from_directory('temp_images', filename, 
+                                      mimetype=response.headers.get('Content-Type', 'image/jpeg'))
+        else:
+            # Si no se encuentra la imagen, devolver una imagen por defecto
+            return send_from_directory('static', 'default_profile.jpg')
+    except Exception as e:
+        print(f"Error al obtener imagen de perfil: {e}")
+        return send_from_directory('static', 'default_profile.jpg')
 
 # Esta parte solo se ejecutará durante el desarrollo local
 if __name__ == '__main__':

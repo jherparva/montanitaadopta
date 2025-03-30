@@ -457,10 +457,9 @@ class APIConnector {
     }
   
     /**
-      /**
-   * Registra un nuevo usuario
-   * @param {Event} event - Evento del formulario
-   */
+     * Registra un nuevo usuario
+     * @param {Event} event - Evento del formulario
+     */
     async registerHandler(event) {
       if (event) event.preventDefault()
   
@@ -951,6 +950,9 @@ class APIConnector {
   
         console.log("URL de foto de perfil:", photoUrl)
   
+        const mainProfilePhoto = document.getElementById("profile-photo")
+        const currentProfilePhoto = document.getElementById("current-profile-photo")
+  
         if (mainProfilePhoto) {
           mainProfilePhoto.src = photoUrl
         }
@@ -965,5 +967,3 @@ class APIConnector {
       document.getElementById("user-menu").style.display = "none"
     }
   }
-  
-  

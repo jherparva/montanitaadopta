@@ -214,6 +214,7 @@ def read_users_me(current_user: dict = Depends(verify_token), db: Session = Depe
         "telefono": usuario.telefono,
         "fecha_nacimiento": str(usuario.fecha_nacimiento),
         "edad": usuario.edad,
+        "foto_perfil": usuario.foto_perfil
     }
 
 @router.post("/logout", operation_id="logout_user_adoptme")
@@ -304,7 +305,8 @@ def update_user(usuario_update: UsuarioUpdate, db: Session = Depends(get_db), to
         "telefono": db_usuario.telefono,
         "fecha_nacimiento": str(db_usuario.fecha_nacimiento),
         "edad": db_usuario.edad,
-        "codigo_postal": db_usuario.codigo_postal
+        "codigo_postal": db_usuario.codigo_postal,
+        "foto_perfil": db_usuario.foto_perfil
     }
 
 # 🔹 Eliminación de usuario
@@ -405,6 +407,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "nombre": user.nombre
     }
 
+# 🔹 ENDPOINT ACTUALIZADO PARA FOTOS DE PERFIL
 @router.post("/update-profile-photo")
 async def update_profile_photo(
     photo: UploadFile = File(...), 
@@ -429,7 +432,7 @@ async def update_profile_photo(
             raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
         
         # Redimensionar la imagen si es necesario
-        max_resolution = 1000  # Reducido para minimizar uso de memoria
+        max_resolution = 800
         width, height = image.size
         if width > max_resolution or height > max_resolution:
             ratio = min(max_resolution / width, max_resolution / height)
@@ -437,56 +440,55 @@ async def update_profile_photo(
             new_height = int(height * ratio)
             image = image.resize((new_width, new_height), Image.LANCZOS)
         
-        # Generar nombre de archivo
+        # Generar nombre de archivo único
         file_extension = photo.filename.split('.')[-1].lower()
         if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
             file_extension = 'jpg'  # Formato por defecto
         
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # Usar /tmp para almacenamiento en Render
-        tmp_dir = "/tmp/profile_photos"
-        os.makedirs(tmp_dir, exist_ok=True)
-        filepath = os.path.join(tmp_dir, filename)
+        # Crear directorios si no existen
+        # Directorio para archivos estáticos públicos
+        static_dir = "static/profile_photos"
+        os.makedirs(static_dir, exist_ok=True)
+        
+        # Ruta completa del archivo
+        filepath = os.path.join(static_dir, filename)
         
         # Guardar la imagen optimizada
-        image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
+        image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
         image.save(filepath, format=image_format, optimize=True, quality=85)
         
-        # URL pública para la imagen 
+        # URL pública para la imagen (relativa al dominio)
         public_url = f"/static/profile_photos/{filename}"
         
-        # Copiar a la ubicación pública si es necesario
-        public_dir = "static/profile_photos"
-        os.makedirs(public_dir, exist_ok=True)
-        try:
-            shutil.copy(filepath, os.path.join(public_dir, filename))
-        except Exception as e:
-            # Si falla la copia, seguimos usando la URL temporal
-            print(f"Error al copiar a ubicación pública: {str(e)}")
-        
         # Actualizar en la base de datos
-        try:
-            user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
-            if user:
-                user.foto_perfil = public_url
-                db.commit()
-        except Exception as db_error:
-            print(f"Error al actualizar la base de datos: {str(db_error)}")
-            # Revertimos si hay error en DB
-            raise HTTPException(status_code=500, detail="Error al actualizar el perfil")
+        user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
+        if user:
+            # Si había una foto anterior, intentar eliminarla
+            if user.foto_perfil and os.path.exists(user.foto_perfil.lstrip('/')):
+                try:
+                    os.remove(user.foto_perfil.lstrip('/'))
+                except:
+                    pass  # Ignorar errores al eliminar
+            
+            user.foto_perfil = public_url
+            db.commit()
+        
+        # Devolver la URL completa para uso inmediato
+        base_url = "https://montanitaadopta.onrender.com"
+        full_url = f"{base_url}{public_url}"
         
         return {
             "success": True, 
-            "photoUrl": public_url,
+            "photoUrl": full_url,
             "message": "Foto de perfil actualizada exitosamente"
         }
     
     except HTTPException as http_ex:
-        # Reenviar excepciones HTTP
         raise http_ex
     except Exception as e:
-        # Capturar cualquier otra excepción
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")

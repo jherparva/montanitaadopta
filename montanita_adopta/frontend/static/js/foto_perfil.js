@@ -126,121 +126,55 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error("No se encontró el token de autenticación")
         }
   
-        // Comprimir la imagen antes de procesarla
-        const file = photoUpload.files[0]
-        const compressedDataURL = await compressImage(file, {
-          maxWidth: 400,
-          maxHeight: 400,
-          quality: 0.7,
+        // Enviar la solicitud con el token de autenticación
+        const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/update-profile-photo", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
         })
   
-        console.log("Imagen comprimida correctamente")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.detail || "Error al actualizar la foto de perfil")
+        }
   
-        // Intentar enviar al backend primero
-        let backendSuccess = false
-        let photoUrl = ""
+        const data = await response.json()
+        console.log("Respuesta del servidor:", data)
   
-        try {
-          // Convertir Data URL a Blob para enviar al backend
-          const blob = await dataURLtoBlob(compressedDataURL)
-          const photoFormData = new FormData()
-          photoFormData.append("photo", blob, "profile-photo.jpg")
+        if (data.photoUrl) {
+          // Usar la URL completa proporcionada por el servidor
+          const photoUrl = data.photoUrl
   
-          // Enviar la solicitud con el token de autenticación
-          const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/auth/update-profile-photo", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: photoFormData,
+          console.log("URL de la foto:", photoUrl)
+  
+          // Actualizar la interfaz de usuario
+          if (mainProfilePhoto) {
+            mainProfilePhoto.src = photoUrl
+          }
+  
+          if (currentProfilePhoto) {
+            currentProfilePhoto.src = photoUrl
+          }
+  
+          // Actualizar localStorage
+          const userData = JSON.parse(localStorage.getItem("userData") || "{}")
+          userData.foto_perfil = photoUrl
+          localStorage.setItem("userData", JSON.stringify(userData))
+  
+          // Notificar éxito
+          Swal.fire({
+            icon: "success",
+            title: "¡Éxito!",
+            text: "Foto de perfil actualizada correctamente",
           })
   
-          const data = await response.json()
-  
-          if (!response.ok) {
-            throw new Error(data.detail || "Error al actualizar la foto de perfil en el backend")
-          }
-  
-          console.log("Respuesta del servidor:", data)
-  
-          if (data.photoUrl) {
-            // Construir la URL completa para la imagen
-            if (data.photoUrl.startsWith("http")) {
-              photoUrl = data.photoUrl
-            } else {
-              // Asegurarse de usar el dominio correcto
-              const apiDomain = "https://montanitaadopta.onrender.com"
-              photoUrl = data.photoUrl.startsWith("/") ? `${apiDomain}${data.photoUrl}` : `${apiDomain}/${data.photoUrl}`
-            }
-  
-            console.log("URL completa de la foto (backend):", photoUrl)
-            console.log("Intentando cargar imagen desde:", photoUrl)
-  
-            // Verificar si la imagen es accesible
-            const testImg = new Image()
-            testImg.onload = () => {
-              console.log("✅ Imagen cargada correctamente desde el servidor")
-            }
-            testImg.onerror = () => {
-              console.warn("⚠️ No se pudo cargar la imagen desde el servidor, usando versión local")
-              // Si no se puede cargar la imagen, usar la versión comprimida local
-              photoUrl = compressedDataURL
-  
-              // Actualizar la interfaz con la versión local
-              if (mainProfilePhoto) mainProfilePhoto.src = photoUrl
-              if (currentProfilePhoto) currentProfilePhoto.src = photoUrl
-  
-              // Actualizar localStorage
-              const userData = JSON.parse(localStorage.getItem("userData") || "{}")
-              userData.foto_perfil = photoUrl
-              localStorage.setItem("userData", JSON.stringify(userData))
-            }
-            testImg.src = photoUrl
-  
-            backendSuccess = true
-          }
-        } catch (backendError) {
-          console.warn("No se pudo actualizar la foto en el backend:", backendError)
-          // Continuamos con el guardado local
+          // Cerrar el modal
+          window.closePhotoModal()
+        } else {
+          throw new Error("No se recibió la URL de la imagen")
         }
-  
-        // Si el backend falló o no devolvió una URL, usamos la versión local
-        if (!backendSuccess) {
-          photoUrl = compressedDataURL
-          console.log("Usando versión local de la imagen")
-        }
-  
-        // Guardar la URL en localStorage para persistencia
-        const userData = JSON.parse(localStorage.getItem("userData") || "{}")
-        userData.foto_perfil = photoUrl
-        localStorage.setItem("userData", JSON.stringify(userData))
-  
-        console.log("Datos de usuario actualizados en localStorage")
-  
-        // Actualizar la interfaz de usuario
-        if (mainProfilePhoto) {
-          mainProfilePhoto.src = photoUrl
-          console.log("Foto de perfil principal actualizada")
-        }
-  
-        if (currentProfilePhoto) {
-          currentProfilePhoto.src = photoUrl
-          console.log("Foto de perfil en modal actualizada")
-        }
-  
-        // Limpiar la vista previa
-        photoPreview.style.display = "none"
-        photoUpload.value = ""
-  
-        // Notificar éxito
-        Swal.fire({
-          icon: "success",
-          title: "¡Éxito!",
-          text: "Foto de perfil actualizada correctamente",
-        })
-  
-        // Cerrar el modal
-        window.closePhotoModal()
       } catch (error) {
         console.error("Error:", error)
   
@@ -252,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   
-    // Función para mostrar el nombre de usuario y la foto de perfil al cargar la página
+    // Función para actualizar el UI del usuario al cargar la página
     async function updateUserUI() {
       try {
         const token = localStorage.getItem("token")
@@ -319,14 +253,14 @@ document.addEventListener("DOMContentLoaded", () => {
   
           localStorage.setItem("userData", JSON.stringify(updatedUserData))
   
-          // Actualizar la foto de perfil si existe en el servidor y no tenemos una local
-          if (userData.foto_perfil && !storedUserData.foto_perfil) {
+          // Actualizar la foto de perfil si existe en el servidor
+          if (userData.foto_perfil) {
             // Construir la URL completa para la imagen
             let photoUrl = userData.foto_perfil
-  
+            
             // Si es una ruta relativa, convertirla a absoluta
             if (photoUrl.startsWith("/")) {
-              photoUrl = window.location.origin + photoUrl
+              photoUrl = "https://montanitaadopta.onrender.com" + photoUrl
             }
   
             console.log("URL de foto de perfil del servidor:", photoUrl)
@@ -376,83 +310,4 @@ document.addEventListener("DOMContentLoaded", () => {
         text: "Has cerrado sesión correctamente",
       })
     })
-  
-    // ===== FUNCIONES AUXILIARES PARA COMPRESIÓN DE IMÁGENES =====
-  
-    /**
-     * Comprime una imagen
-     * @param {File|Blob} file - Archivo de imagen a comprimir
-     * @param {Object} options - Opciones de compresión
-     * @returns {Promise<string>} - Data URL de la imagen comprimida
-     */
-    async function compressImage(file, options = {}) {
-      const { maxWidth = 800, maxHeight = 800, quality = 0.8, format = "jpeg" } = options
-  
-      return new Promise((resolve, reject) => {
-        // Crear un elemento de imagen para cargar el archivo
-        const img = new Image()
-        img.onload = () => {
-          // Liberar la URL del objeto
-          URL.revokeObjectURL(img.src)
-  
-          // Calcular las dimensiones manteniendo la proporción
-          let width = img.width
-          let height = img.height
-  
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width)
-            width = maxWidth
-          }
-  
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height)
-            height = maxHeight
-          }
-  
-          // Crear un canvas para dibujar la imagen redimensionada
-          const canvas = document.createElement("canvas")
-          canvas.width = width
-          canvas.height = height
-  
-          // Dibujar la imagen en el canvas
-          const ctx = canvas.getContext("2d")
-          ctx.drawImage(img, 0, 0, width, height)
-  
-          // Convertir el canvas a Data URL
-          const dataURL = canvas.toDataURL(`image/${format}`, quality)
-          resolve(dataURL)
-        }
-  
-        img.onerror = () => {
-          URL.revokeObjectURL(img.src)
-          reject(new Error("Error al cargar la imagen"))
-        }
-  
-        // Cargar la imagen desde el archivo
-        img.src = URL.createObjectURL(file)
-      })
-    }
-  
-    /**
-     * Convierte un Data URL a Blob
-     * @param {string} dataURL - Data URL a convertir
-     * @returns {Promise<Blob>} - Blob resultante
-     */
-    function dataURLtoBlob(dataURL) {
-      return new Promise((resolve) => {
-        const parts = dataURL.split(";base64,")
-        const contentType = parts[0].split(":")[1]
-        const raw = window.atob(parts[1])
-        const rawLength = raw.length
-        const uInt8Array = new Uint8Array(rawLength)
-  
-        for (let i = 0; i < rawLength; ++i) {
-          uInt8Array[i] = raw.charCodeAt(i)
-        }
-  
-        resolve(new Blob([uInt8Array], { type: contentType }))
-      })
-    }
   })
-  
-  

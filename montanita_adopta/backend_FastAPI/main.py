@@ -69,11 +69,18 @@ Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+# Crear directorio para fotos de perfil si no existe
+PROFILE_PHOTOS_DIR = "static/profile_photos"
+os.makedirs(PROFILE_PHOTOS_DIR, exist_ok=True)
+
+# Montar directorio específico para fotos de perfil
+app.mount("/static/profile_photos", StaticFiles(directory=PROFILE_PHOTOS_DIR), name="profile_photos")
 
 # Mensaje de inicio
 print("⚡ Servidor iniciado correctamente!")
 print(f"📂 Templates: {TEMPLATES_DIR}")
 print(f"📂 Static: {STATIC_DIR}")
+print(f"📂 Profile Photos: {PROFILE_PHOTOS_DIR}")
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
@@ -120,8 +127,6 @@ async def formulario_adopcion(request: Request, id: int = None, db: Session = De
     
     print(f"✅ Mascota encontrada: {mascota.nombre}")  # Verifica si tiene datos
     return templates.TemplateResponse("formulario_adopcion.html", {"request": request, "mascota": mascota})
-
-from fastapi.responses import JSONResponse
 
 @app.get("/lista_mascotas", response_class=JSONResponse)
 async def lista_mascotas(db: Session = Depends(get_db)):
