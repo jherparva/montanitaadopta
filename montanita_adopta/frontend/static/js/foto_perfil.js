@@ -208,67 +208,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   
-    // Modificar la función updateUIWithNewPhoto para mejorar el manejo de errores
+    // Función para actualizar la UI con la nueva foto
     function updateUIWithNewPhoto(photoUrl) {
       console.log("Actualizando UI con la nueva foto:", photoUrl)
   
       // Añadir parámetro de tiempo para evitar caché
       const noCacheUrl = `${photoUrl}?t=${new Date().getTime()}`
   
-      // Función para intentar cargar la imagen con reintentos
-      const loadImageWithRetry = (imgElement, url, maxRetries = 3, delay = 1000, currentRetry = 0) => {
-        if (!imgElement) return
-  
-        console.log(
-          `Intentando cargar imagen en ${imgElement.id || "elemento"} (intento ${currentRetry + 1}/${maxRetries + 1}):`,
-          url,
-        )
-  
-        // Establecer la imagen
-        imgElement.src = url
-  
-        // Manejar éxito
-        imgElement.onload = () => {
-          console.log(`✅ Imagen cargada correctamente en ${imgElement.id || "elemento"}:`, imgElement.src)
-        }
-  
-        // Manejar error con reintentos
-        imgElement.onerror = () => {
-          console.warn(
-            `⚠️ Error al cargar la imagen en ${imgElement.id || "elemento"} (intento ${currentRetry + 1}/${maxRetries + 1}):`,
-            url,
-          )
-  
-          if (currentRetry < maxRetries) {
-            console.log(`Reintentando en ${delay}ms...`)
-  
-            // Incrementar el parámetro de tiempo para evitar caché en cada reintento
-            const retryUrl = `${photoUrl}?t=${new Date().getTime()}`
-  
-            setTimeout(() => {
-              loadImageWithRetry(imgElement, retryUrl, maxRetries, delay * 1.5, currentRetry + 1)
-            }, delay)
-          } else {
-            console.error(
-              `❌ Error al cargar la imagen en ${imgElement.id || "elemento"} después de múltiples intentos:`,
-              url,
-            )
-            // Último intento: usar la URL original sin parámetros de caché
-            imgElement.src = photoUrl
-          }
-        }
-      }
-  
       // Actualizar la foto en el menú de usuario
       if (mainProfilePhoto) {
         console.log("Actualizando foto principal")
-        loadImageWithRetry(mainProfilePhoto, noCacheUrl)
+        mainProfilePhoto.src = noCacheUrl
       }
   
       // Actualizar la foto actual en el modal
       if (currentProfilePhoto) {
         console.log("Actualizando foto en modal")
-        loadImageWithRetry(currentProfilePhoto, noCacheUrl)
+        currentProfilePhoto.src = noCacheUrl
       }
   
       // Actualizar cualquier otra instancia de la foto de perfil en la página
@@ -276,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (allProfilePhotos.length > 0) {
         console.log(`Actualizando ${allProfilePhotos.length} instancias de fotos de perfil`)
         allProfilePhotos.forEach((photo) => {
-          loadImageWithRetry(photo, noCacheUrl)
+          photo.src = noCacheUrl
         })
       }
   
@@ -302,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const userData = JSON.parse(localStorage.getItem("userData") || "{}")
           window.updateMenu(userData)
         }
-      }, 1000) // Aumentado a 1 segundo para dar más tiempo
+      }, 500)
     }
   
     // Función para mostrar el nombre de usuario y la foto de perfil al cargar la página
