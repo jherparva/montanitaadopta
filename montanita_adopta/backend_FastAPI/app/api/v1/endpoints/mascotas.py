@@ -53,7 +53,7 @@ async def get_mascotas(
             tamaño=m.tamaño,
             raza=m.raza,
             descripcion=m.descripcion,
-            imagen=f"/static/imagenes/{m.imagen}" if m.imagen else "/static/imagenes/default.png"
+            imagen=f"/static/imagenes/{m.imagen}" if m.imagen else "/static/imagenes/default.webp"
         )
         for m in mascotas
     ]
@@ -72,7 +72,7 @@ async def get_mascota(mascota_id: int, db: Session = Depends(get_db)):
         tamaño=mascota.tamaño,
         raza=mascota.raza,
         descripcion=mascota.descripcion,
-        imagen=f"/static/imagenes/{mascota.imagen}" if mascota.imagen else "/static/imagenes/default.png"
+        imagen=f"/static/imagenes/{mascota.imagen}" if mascota.imagen else "/static/imagenes/default.webp"
     )
 
 @router.post("/adoptar", response_model=AdopcionResponse, status_code=status.HTTP_201_CREATED)
