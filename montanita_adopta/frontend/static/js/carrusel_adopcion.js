@@ -87,14 +87,27 @@ function updateDogCarousel() {
 
     // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
+      // Extraer el nombre del archivo
+      let fileName
+      if (imagenUrl.includes("/")) {
+        const pathParts = imagenUrl.split("/")
+        fileName = pathParts[pathParts.length - 1]
+      } else {
+        fileName = imagenUrl
+      }
+
+      // Intentar con la primera letra en mayúscula
+      const capitalizedFileName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
+
+      // Construir la URL completa
+      imagenUrl = `${apiConnector.imageBaseURL}/static/imagenes/${capitalizedFileName}`
     }
 
     console.log("URL de imagen en carrusel de perros:", imagenUrl)
 
     item.innerHTML = `
             <div class="animal">
-                <img src="${imagenUrl}" alt="${dog.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
+                <img src="${imagenUrl}" alt="${dog.nombre}" onerror="this.onerror=null; this.src='/static/img/placeholder_pet.jpg';">
                 <h4>${dog.nombre}</h4>
                 <p>${dog.descripcion ? dog.descripcion.substring(0, 30) + "..." : "Un perro esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${dog.id}" type="button">
@@ -135,14 +148,27 @@ function updateCatCarousel() {
 
     // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
+      // Extraer el nombre del archivo
+      let fileName
+      if (imagenUrl.includes("/")) {
+        const pathParts = imagenUrl.split("/")
+        fileName = pathParts[pathParts.length - 1]
+      } else {
+        fileName = imagenUrl
+      }
+
+      // Intentar con la primera letra en mayúscula
+      const capitalizedFileName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
+
+      // Construir la URL completa
+      imagenUrl = `${apiConnector.imageBaseURL}/static/imagenes/${capitalizedFileName}`
     }
 
     console.log("URL de imagen en carrusel de gatos:", imagenUrl)
 
     item.innerHTML = `
             <div class="animal">
-                <img src="${imagenUrl}" alt="${cat.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
+                <img src="${imagenUrl}" alt="${cat.nombre}" onerror="this.onerror=null; this.src='/static/img/placeholder_pet.jpg';">
                 <h4>${cat.nombre}</h4>
                 <p>${cat.descripcion ? cat.descripcion.substring(0, 30) + "..." : "Un gato esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${cat.id}" type="button">

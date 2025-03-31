@@ -247,7 +247,20 @@ function renderAnimals(animals) {
 
     // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
+      // Extraer el nombre del archivo
+      let fileName
+      if (imagenUrl.includes("/")) {
+        const pathParts = imagenUrl.split("/")
+        fileName = pathParts[pathParts.length - 1]
+      } else {
+        fileName = imagenUrl
+      }
+
+      // Intentar con la primera letra en mayúscula
+      const capitalizedFileName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
+
+      // Construir la URL completa
+      imagenUrl = `${apiConnector.imageBaseURL}/static/imagenes/${capitalizedFileName}`
     }
 
     console.log("URL de imagen en renderAnimals:", imagenUrl)
@@ -255,7 +268,7 @@ function renderAnimals(animals) {
     html += `
             <div class="animal-card" data-id="${animal.id}">
                 <div class="animal-image">
-                    <img src="${imagenUrl}" alt="${animal.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
+                    <img src="${imagenUrl}" alt="${animal.nombre}" onerror="this.onerror=null; this.src='/static/img/placeholder_pet.jpg';">
                     <button class="favorite-toggle ${isFavorite ? "active" : ""}" data-id="${animal.id}">
                         <i class="fas fa-heart"></i>
                     </button>
@@ -398,7 +411,20 @@ async function openAnimalModal(animalId) {
 
     // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
+      // Extraer el nombre del archivo
+      let fileName
+      if (imagenUrl.includes("/")) {
+        const pathParts = imagenUrl.split("/")
+        fileName = pathParts[pathParts.length - 1]
+      } else {
+        fileName = imagenUrl
+      }
+
+      // Intentar con la primera letra en mayúscula
+      const capitalizedFileName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
+
+      // Construir la URL completa
+      imagenUrl = `${apiConnector.imageBaseURL}/static/imagenes/${capitalizedFileName}`
     }
 
     console.log("URL de imagen en modal:", imagenUrl)
@@ -407,8 +433,8 @@ async function openAnimalModal(animalId) {
     modalName.textContent = animalDetails.nombre
     modalImage.src = imagenUrl
     modalImage.onerror = function () {
-      this.src = "/static/img/placeholder_pet.jpg"
       this.onerror = null
+      this.src = "/static/img/placeholder_pet.jpg"
     }
     modalSpecies.textContent = animalDetails.especie === "dog" ? "Perro" : "Gato"
     modalAge.textContent = animalDetails.edad || "Desconocida"

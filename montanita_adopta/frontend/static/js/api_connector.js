@@ -253,8 +253,12 @@ class APIConnector {
       fileName = imagePath
     }
 
+    // Intentar con la primera letra en mayúscula (para manejar diferencias de capitalización)
+    // Ejemplo: max.webp -> Max.webp
+    const capitalizedFileName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
+
     // Construir la URL completa con la ruta correcta
-    const imageUrl = `${this.imageBaseURL}/static/imagenes/${fileName}`
+    const imageUrl = `${this.imageBaseURL}/static/imagenes/${capitalizedFileName}`
 
     console.log("URL de imagen formateada:", imageUrl)
 
@@ -981,6 +985,11 @@ class APIConnector {
 // Declarar Swal globally
 const Swal = window.Swal
 
+// Declarar las variables updateMenu, closeModal y openModal en el ámbito global
+window.updateMenu = window.updateMenu || (() => {})
+window.closeModal = window.closeModal || (() => {})
+window.openModal = window.openModal || (() => {})
+
 // Crear una instancia global
 const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
 
@@ -1047,9 +1056,4 @@ async function updateUserUI() {
     document.getElementById("user-menu").style.display = "none"
   }
 }
-
-// Declarar las variables updateMenu, closeModal y openModal en el ámbito global
-window.updateMenu = window.updateMenu || (() => {})
-window.closeModal = window.closeModal || (() => {})
-window.openModal = window.openModal || (() => {})
 
