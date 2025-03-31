@@ -1,414 +1,473 @@
-/**
- * Sistema de Servicios Veterinarios
- * Este archivo combina todas las funcionalidades para los servicios veterinarios:
- * - API para interactuar con el backend
- * - Gestión de modales
- * - Configuración de tarjetas y formularios
- * - Herramientas de depuración
- */
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Documento cargado, inicializando...")
 
-// Configuración global
-const API_BASE_URL = "https://montanitaadopta.onrender.com/adoptme/api/v1"
-const SERVICES_ENDPOINT = `${API_BASE_URL}/veterinary_services/`
-const RESERVATIONS_ENDPOINT = `${API_BASE_URL}/veterinary_services/reservations/`
-const AVAILABILITY_ENDPOINT = `${API_BASE_URL}/veterinary_services/availability/`
+  // Cargar los servicios veterinarios inmediatamente
+  loadVeterinaryServices().then(() => {
+    // Configurar botones solo después de cargar los servicios
+    setupAllButtons()
+  })
+})
 
-// Tiempo de caché en milisegundos (1 hora)
-const CACHE_DURATION = 60 * 60 * 1000
-
-// Estado global
-let veterinaryServices = []
-let currentServiceId = null
-
-// =============================================
-// INICIALIZACIÓN
-// =============================================
-
-// Inicialización cuando el DOM está listo
-document.addEventListener("DOMContentLoaded", initVeterinaryServices)
-
-/**
- * Inicializa el sistema de servicios veterinarios
- */
-async function initVeterinaryServices() {
-  console.log("Inicializando sistema de servicios veterinarios...")
-
+// Función para cargar los servicios veterinarios desde la API
+async function loadVeterinaryServices() {
   try {
-    // 1. Cargar servicios desde la API
-    await loadServices()
-
-    // 2. Configurar los elementos de la UI
-    setupServiceCards()
-    setupReservationForm()
-
-    // 3. Añadir botón de depuración si estamos en modo desarrollo
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      addDebugButton()
-    }
-
-    console.log("Sistema de servicios veterinarios inicializado correctamente")
-  } catch (error) {
-    console.error("Error al inicializar servicios veterinarios:", error)
-    showNotification("error", "No se pudieron cargar los servicios veterinarios. Por favor, recargue la página.")
-  }
-}
-
-// =============================================
-// FUNCIONES DE LA API
-// =============================================
-
-/**
- * Carga los servicios veterinarios desde la API
- */
-async function loadServices() {
-  console.log("Cargando servicios veterinarios desde la API...")
-
-  try {
-    // Verificar si hay datos en caché y si son válidos
-    const cachedData = getServicesFromCache()
-    if (cachedData) {
-      console.log("Usando datos de servicios desde caché")
-      veterinaryServices = cachedData
-      return true
-    }
-
-    console.log("Obteniendo servicios desde la API...")
-    const response = await fetch(SERVICES_ENDPOINT)
+    console.log("Cargando servicios veterinarios...")
+    const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/")
 
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
+      throw new Error(`Error al cargar los servicios veterinarios: ${response.status} ${response.statusText}`)
     }
 
     const services = await response.json()
+    console.log("Servicios cargados:", services)
 
-    if (!services || !Array.isArray(services) || services.length === 0) {
-      throw new Error("No se recibieron servicios válidos de la API")
+    if (!services || services.length === 0) {
+      console.error("No se recibieron servicios de la API")
+      return false
     }
 
-    // Guardar en caché
-    saveServicesToCache(services)
+    // Guardar los servicios en localStorage para uso posterior
+    localStorage.setItem("veterinaryServices", JSON.stringify(services))
+    console.log("Servicios guardados en localStorage")
 
-    // Guardar en variable global
-    veterinaryServices = services
+    // Mapear servicios por nombre para facilitar su búsqueda
+    const serviceMap = {}
+    services.forEach((service) => {
+      serviceMap[service.name.toLowerCase()] = service
+    })
+    localStorage.setItem("veterinaryServicesMap", JSON.stringify(serviceMap))
 
-    console.log(`Se obtuvieron ${services.length} servicios de la API`)
     return true
   } catch (error) {
-    console.error("Error al obtener servicios:", error)
-
-    // Intentar recuperar de caché incluso si está expirada como último recurso
-    const expiredCache = localStorage.getItem("veterinaryServices")
-    if (expiredCache) {
-      try {
-        console.warn("Usando caché expirada como respaldo")
-        const parsedCache = JSON.parse(expiredCache)
-        veterinaryServices = parsedCache.data || parsedCache
-        return true
-      } catch (e) {
-        console.error("Error al parsear caché expirada:", e)
-      }
-    }
-
-    throw error
+    console.error("Error al cargar servicios:", error)
+    return false
   }
 }
 
-/**
- * Obtiene un servicio veterinario por su ID
- * @param {number} id - ID del servicio
- * @returns {Promise<Object>} Datos del servicio
- */
-async function fetchServiceById(id) {
-  if (!id) {
-    throw new Error("ID de servicio no proporcionado")
-  }
-
-  try {
-    // Intentar obtener de la variable global primero
-    if (veterinaryServices && veterinaryServices.length > 0) {
-      const service = veterinaryServices.find((s) => s.id == id)
-      if (service) {
-        return service
-      }
-    }
-
-    // Intentar obtener de caché
-    const cachedServices = getServicesFromCache()
-    if (cachedServices) {
-      const service = cachedServices.find((s) => s.id == id)
-      if (service) {
-        return service
-      }
-    }
-
-    // Si no está en caché, obtener de la API
-    const response = await fetch(`${SERVICES_ENDPOINT}${id}/`)
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error(`Error al obtener servicio ID ${id}:`, error)
-    throw error
-  }
-}
-
-/**
- * Obtiene horarios disponibles para una fecha y servicio
- * @param {string} date - Fecha en formato YYYY-MM-DD
- * @param {number} serviceId - ID del servicio
- * @returns {Promise<Array>} Lista de horarios disponibles
- */
-async function fetchAvailableTimeSlots(date, serviceId) {
-  if (!date) {
-    throw new Error("Fecha no proporcionada")
-  }
-
-  if (!serviceId) {
-    throw new Error("ID de servicio no proporcionado")
-  }
-
-  try {
-    const requestData = {
-      date: date,
-      service_id: serviceId,
-    }
-
-    const response = await fetch(AVAILABILITY_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-
-    if (!data || !data.time_slots) {
-      throw new Error("Formato de respuesta inválido")
-    }
-
-    return data.time_slots
-  } catch (error) {
-    console.error("Error al obtener horarios disponibles:", error)
-    throw error
-  }
-}
-
-/**
- * Crea una nueva reserva de servicio veterinario
- * @param {Object} reservationData - Datos de la reserva
- * @returns {Promise<Object>} Resultado de la operación
- */
-async function createReservation(reservationData) {
-  if (!reservationData || !reservationData.service_id) {
-    throw new Error("Datos de reserva inválidos")
-  }
-
-  try {
-    // Obtener token de autenticación si existe
-    const token = localStorage.getItem("token")
-
-    // Configurar headers
-    const headers = {
-      "Content-Type": "application/json",
-    }
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`
-    }
-
-    // Enviar solicitud
-    const response = await fetch(RESERVATIONS_ENDPOINT, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(reservationData),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new Error(responseData.detail || `Error ${response.status}: ${response.statusText}`)
-    }
-
-    return {
-      success: true,
-      data: responseData,
-    }
-  } catch (error) {
-    console.error("Error al crear reserva:", error)
-    return {
-      success: false,
-      error: error.message || "Error al procesar la reserva",
-    }
-  }
-}
-
-/**
- * Guarda los servicios en caché local
- * @param {Array} services - Lista de servicios a guardar
- */
-function saveServicesToCache(services) {
-  if (!services || !Array.isArray(services)) return
-
-  const cacheData = {
-    timestamp: Date.now(),
-    data: services,
-  }
-
-  localStorage.setItem("veterinaryServices", JSON.stringify(cacheData))
-  console.log(`${services.length} servicios guardados en caché local`)
-}
-
-/**
- * Obtiene los servicios desde la caché si son válidos
- * @returns {Array|null} Servicios en caché o null si no hay o están expirados
- */
-function getServicesFromCache() {
-  try {
-    const cachedData = localStorage.getItem("veterinaryServices")
-
-    if (!cachedData) return null
-
-    const parsedData = JSON.parse(cachedData)
-
-    // Verificar si es el formato antiguo o nuevo
-    if (parsedData.timestamp && parsedData.data) {
-      const { timestamp, data } = parsedData
-      const now = Date.now()
-
-      // Verificar si la caché ha expirado
-      if (now - timestamp > CACHE_DURATION) {
-        console.log("Caché de servicios expirada")
-        return null
-      }
-
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        console.warn("Datos de caché inválidos")
-        return null
-      }
-
-      return data
-    } else if (Array.isArray(parsedData)) {
-      // Formato antiguo, solo el array
-      return parsedData
-    }
-
-    return null
-  } catch (error) {
-    console.error("Error al obtener servicios de caché:", error)
-    return null
-  }
-}
-
-/**
- * Limpia la caché de servicios
- */
-function clearServicesCache() {
-  localStorage.removeItem("veterinaryServices")
-  console.log("Caché de servicios eliminada")
-}
-
-// =============================================
-// GESTIÓN DE MODALES
-// =============================================
-
-/**
- * Abre el modal de información de un servicio
- * @param {string|number} serviceId - ID del servicio
- */
-function openInfoModal(serviceId) {
-  console.log(`Abriendo modal de información para servicio ID: ${serviceId}`)
-
-  if (!serviceId) {
-    showNotification("error", "No se pudo determinar el servicio seleccionado.")
+// Configurar todos los botones después de cargar los servicios
+function setupAllButtons() {
+  // Intentar obtener los servicios del localStorage
+  const servicesJson = localStorage.getItem("veterinaryServices")
+  if (!servicesJson) {
+    console.error("No se encontraron servicios en localStorage para configurar botones")
     return
   }
 
-  // Buscar el servicio por ID
-  fetchServiceById(serviceId)
-    .then((service) => {
-      if (!service) {
-        console.error(`No se encontró servicio con ID: ${serviceId}`)
-        showNotification("error", "Servicio no encontrado.")
-        return
+  const services = JSON.parse(servicesJson)
+  console.log(`Configurando botones con ${services.length} servicios disponibles`)
+
+  // Configurar botones de reserva
+  setupReservationButtons(services)
+
+  // Configurar botones de más información
+  setupInfoButtons(services)
+
+  // Actualizar precios
+  updatePrices(services)
+}
+
+// Formatear precio en formato de pesos colombianos
+function formatColombiaPesos(price) {
+  if (price === undefined || price === null) return "$ 0"
+  // Formatear número sin decimales y con punto como separador de miles
+  const formattedPrice = Math.round(price)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  return `$ ${formattedPrice}`
+}
+
+// Actualizar precios en la página
+function updatePrices(services) {
+  // Actualizar precios en elementos con clase service-price
+  const priceElements = document.querySelectorAll(".service-price")
+  console.log(`Encontrados ${priceElements.length} elementos de precio`)
+
+  if (priceElements.length === 0) {
+    console.warn("No se encontraron elementos con clase 'service-price'")
+  }
+
+  // Intentar diferentes estrategias para actualizar los precios
+
+  // Estrategia 1: Si hay tantos elementos de precio como servicios, asignar en orden
+  if (priceElements.length === services.length) {
+    priceElements.forEach((element, index) => {
+      if (index < services.length) {
+        element.textContent = formatColombiaPesos(services[index].price)
+        console.log(`Precio actualizado (estrategia 1): ${formatColombiaPesos(services[index].price)}`)
       }
+    })
+  }
+  // Estrategia 2: Buscar elementos cercanos que contengan el nombre del servicio
+  else {
+    priceElements.forEach((element) => {
+      // Buscar el contenedor padre (puede ser un div, card, etc.)
+      const container = element.closest(".service-card") || element.parentElement
+      if (!container) return
 
-      // Obtener el modal
-      const modal = document.getElementById("infoModal")
-      if (!modal) {
-        console.error("Modal de información no encontrado en el DOM")
-        return
-      }
+      // Buscar texto que pueda contener el nombre del servicio
+      const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
 
-      // Actualizar contenido del modal
-      modal.querySelector(".modal-title").textContent = service.name
-      modal.querySelector(".modal-description").textContent = service.description || "No hay descripción disponible"
-      modal.querySelector(".modal-price").textContent = `${formatCurrency(service.price)}`
-      modal.querySelector(".modal-duration").textContent = `${service.duration_minutes} minutos`
+      for (const textEl of textElements) {
+        const serviceName = textEl.textContent.trim().toLowerCase()
 
-      // Configurar botón de reserva en el modal de información
-      const reserveButton = document.getElementById("reserve-from-info")
-      if (reserveButton) {
-        reserveButton.onclick = () => {
-          closeModal("infoModal")
-          openReservationModal(service.name, service.id)
+        // Buscar un servicio que coincida con este nombre
+        for (const service of services) {
+          if (service.name.toLowerCase().includes(serviceName) || serviceName.includes(service.name.toLowerCase())) {
+            element.textContent = formatColombiaPesos(service.price)
+            console.log(`Precio actualizado (estrategia 2) para ${service.name}: ${formatColombiaPesos(service.price)}`)
+            break
+          }
         }
       }
+    })
+  }
 
-      // Mostrar el modal
-      modal.style.display = "block"
-    })
-    .catch((error) => {
-      console.error("Error al obtener información del servicio:", error)
-      showNotification("error", "Error al cargar la información del servicio.")
-    })
+  // Actualizar también precios estáticos
+  const staticPrices = document.querySelectorAll(".static-price")
+  staticPrices.forEach((element) => {
+    const originalValue = element.getAttribute("data-price")
+    if (originalValue) {
+      element.textContent = formatColombiaPesos(Number.parseFloat(originalValue))
+    }
+  })
 }
 
-/**
- * Abre el modal de reserva para un servicio
- * @param {string} serviceName - Nombre del servicio
- * @param {string|number} serviceId - ID del servicio
- */
-function openReservationModal(serviceName, serviceId) {
-  console.log(`Abriendo modal de reserva para servicio: ${serviceName} (ID: ${serviceId})`)
+// Configurar los botones de reserva
+function setupReservationButtons(services) {
+  const reserveButtons = document.querySelectorAll(".reserve-btn")
+  console.log(`Configurando ${reserveButtons.length} botones de reserva`)
 
-  if (!serviceId) {
-    showNotification("error", "No se pudo determinar el servicio seleccionado.")
+  if (reserveButtons.length === 0) {
+    console.warn("No se encontraron botones con clase 'reserve-btn'")
+  }
+
+  reserveButtons.forEach((button, index) => {
+    // Intentar determinar qué servicio corresponde a este botón
+    let serviceId = null
+    let serviceName = null
+
+    // Estrategia 1: Usar atributos data existentes
+    serviceId = button.getAttribute("data-service-id")
+    serviceName = button.getAttribute("data-service")
+
+    // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
+    if ((!serviceId || serviceId === "null") && serviceName) {
+      const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
+      if (service) {
+        serviceId = service.id
+        console.log(`ID de servicio encontrado por nombre: ${serviceId}`)
+      }
+    }
+
+    // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
+    if (!serviceId || serviceId === "null") {
+      // Buscar el contenedor padre (puede ser un div, card, etc.)
+      const container = button.closest(".service-card") || button.parentElement
+      if (container) {
+        // Buscar texto que pueda contener el nombre del servicio
+        const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+
+        for (const textEl of textElements) {
+          const text = textEl.textContent.trim()
+
+          // Buscar un servicio que coincida con este nombre
+          const service = services.find(
+            (s) =>
+              s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
+          )
+
+          if (service) {
+            serviceId = service.id
+            serviceName = service.name
+            console.log(`Servicio encontrado por texto cercano: ${serviceName} (ID: ${serviceId})`)
+            break
+          }
+        }
+      }
+    }
+
+    // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
+    if ((!serviceId || serviceId === "null") && reserveButtons.length === services.length) {
+      if (index < services.length) {
+        serviceId = services[index].id
+        serviceName = services[index].name
+        console.log(`Servicio asignado por posición: ${serviceName} (ID: ${serviceId})`)
+      }
+    }
+
+    // Actualizar los atributos data del botón
+    if (serviceId && serviceId !== "null") {
+      button.setAttribute("data-service-id", serviceId)
+      if (serviceName) {
+        button.setAttribute("data-service", serviceName)
+      }
+      console.log(`Botón de reserva configurado: ID=${serviceId}, Nombre=${serviceName}`)
+    } else {
+      console.warn(`No se pudo determinar el servicio para un botón de reserva`)
+    }
+
+    // Añadir evento click
+    button.addEventListener("click", function () {
+      const service = this.getAttribute("data-service")
+      const serviceId = this.getAttribute("data-service-id")
+      console.log(`Botón de reserva clickeado: servicio=${service}, id=${serviceId}`)
+      openReservationModal(service, serviceId)
+    })
+  })
+}
+
+// Configurar los botones de más información
+function setupInfoButtons(services) {
+  const infoButtons = document.querySelectorAll(".info-btn")
+  console.log(`Configurando ${infoButtons.length} botones de información`)
+
+  if (infoButtons.length === 0) {
+    console.warn("No se encontraron botones con clase 'info-btn'")
+  }
+
+  infoButtons.forEach((button, index) => {
+    // Intentar determinar qué servicio corresponde a este botón (similar a setupReservationButtons)
+    let serviceId = null
+    let serviceName = null
+
+    // Estrategia 1: Usar atributos data existentes
+    serviceId = button.getAttribute("data-service-id")
+    serviceName = button.getAttribute("data-service")
+
+    // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
+    if ((!serviceId || serviceId === "null") && serviceName) {
+      const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
+      if (service) {
+        serviceId = service.id
+      }
+    }
+
+    // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
+    if (!serviceId || serviceId === "null") {
+      // Buscar el contenedor padre (puede ser un div, card, etc.)
+      const container = button.closest(".service-card") || button.parentElement
+      if (container) {
+        // Buscar texto que pueda contener el nombre del servicio
+        const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+
+        for (const textEl of textElements) {
+          const text = textEl.textContent.trim()
+
+          // Buscar un servicio que coincida con este nombre
+          const service = services.find(
+            (s) =>
+              s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
+          )
+
+          if (service) {
+            serviceId = service.id
+            serviceName = service.name
+            break
+          }
+        }
+      }
+    }
+
+    // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
+    if ((!serviceId || serviceId === "null") && infoButtons.length === services.length) {
+      if (index < services.length) {
+        serviceId = services[index].id
+        serviceName = services[index].name
+      }
+    }
+
+    // Actualizar los atributos data del botón
+    if (serviceId && serviceId !== "null") {
+      button.setAttribute("data-service-id", serviceId)
+      if (serviceName) {
+        button.setAttribute("data-service", serviceName)
+      }
+      console.log(`Botón de información configurado: ID=${serviceId}, Nombre=${serviceName}`)
+    } else {
+      console.warn(`No se pudo determinar el servicio para un botón de información`)
+    }
+
+    // Añadir evento click
+    button.addEventListener("click", function () {
+      const serviceId = this.getAttribute("data-service-id")
+      console.log(`Botón de información clickeado: id=${serviceId}`)
+      openInfoModal(serviceId)
+    })
+  })
+}
+
+// Abrir modal de información
+function openInfoModal(serviceId) {
+  console.log(`Intentando abrir modal de información para servicio ID=${serviceId}`)
+
+  // Si no hay ID de servicio, intentar recuperarlo
+  if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+    console.error("ID de servicio inválido para modal de información:", serviceId)
+    alert("Error: No se pudo determinar el servicio seleccionado.")
     return
   }
 
-  // Guardar el ID del servicio actual
-  currentServiceId = serviceId
+  // Obtener los servicios del localStorage
+  const servicesJson = localStorage.getItem("veterinaryServices")
+  if (!servicesJson) {
+    console.error("No se encontraron servicios en localStorage")
+    loadVeterinaryServices().then((success) => {
+      if (success) {
+        // Intentar nuevamente después de cargar los servicios
+        openInfoModal(serviceId)
+      } else {
+        alert("Error: No se pudieron cargar los servicios. Por favor, recargue la página.")
+      }
+    })
+    return
+  }
 
-  // Obtener el modal
-  const modal = document.getElementById("reservationModal")
+  const services = JSON.parse(servicesJson)
+  const service = services.find((s) => s.id == serviceId)
+
+  if (!service) {
+    console.error(`No se encontró el servicio con ID ${serviceId}`)
+    alert("Error: Servicio no encontrado.")
+    return
+  }
+
+  // Obtener el modal de información
+  let modal = document.getElementById("infoModal")
   if (!modal) {
-    console.error("Modal de reserva no encontrado en el DOM")
+    console.log("Modal de información no encontrado, creándolo dinámicamente")
+    createInfoModal()
+    modal = document.getElementById("infoModal")
+  }
+
+  // Actualizar contenido del modal
+  const modalTitle = modal.querySelector(".modal-title")
+  const modalDescription = modal.querySelector(".modal-description")
+  const modalPrice = modal.querySelector(".modal-price")
+  const modalDuration = modal.querySelector(".modal-duration")
+
+  if (modalTitle) modalTitle.textContent = service.name
+  if (modalDescription) modalDescription.textContent = service.description || "No hay descripción disponible"
+  if (modalPrice) modalPrice.textContent = `Precio: ${formatColombiaPesos(service.price)}`
+  if (modalDuration) modalDuration.textContent = `Duración: ${service.duration_minutes} minutos`
+
+  // Mostrar el modal
+  modal.style.display = "block"
+}
+
+// Crear modal de información dinámicamente si no existe
+function createInfoModal() {
+  const modalHtml = `
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('infoModal')">&times;</span>
+            <h2 class="modal-title">Información del Servicio</h2>
+            <p class="modal-description"></p>
+            <p class="modal-price"></p>
+            <p class="modal-duration"></p>
+            <button class="btn btn-primary" onclick="closeModal('infoModal')">Cerrar</button>
+        </div>
+    </div>
+    `
+
+  // Añadir el modal al body
+  document.body.insertAdjacentHTML("beforeend", modalHtml)
+
+  // Añadir estilos si es necesario
+  const style = document.createElement("style")
+  style.textContent = `
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 5px;
+    }
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close:hover {
+        color: black;
+    }
+    `
+  document.head.appendChild(style)
+}
+
+// Abrir el modal de reserva
+function openReservationModal(service, serviceId) {
+  console.log(`Abriendo modal de reserva: servicio=${service}, id=${serviceId}`)
+
+  const modal = document.getElementById("reservationModal")
+  const serviceTypeElement = document.getElementById("service-type")
+  const serviceInput = document.getElementById("service-input")
+  const serviceIdInput = document.getElementById("service-id-input")
+
+  if (!modal) {
+    console.error("Modal de reserva no encontrado")
+    alert("Error: Modal de reserva no encontrado.")
     return
   }
 
-  // Actualizar elementos del modal
-  const serviceTypeElement = document.getElementById("service-type")
-  if (serviceTypeElement) {
-    serviceTypeElement.textContent = ` - ${serviceName}`
+  // Verificar que el ID del servicio sea válido
+  if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+    console.error("ID de servicio inválido:", serviceId)
+
+    // Intentar obtener el ID del servicio desde localStorage
+    const servicesJson = localStorage.getItem("veterinaryServices")
+    if (servicesJson) {
+      const services = JSON.parse(servicesJson)
+
+      // Buscar por nombre exacto
+      let foundService = services.find((s) => s.name === service)
+
+      // Si no se encuentra, buscar por nombre parcial
+      if (!foundService && service) {
+        foundService = services.find(
+          (s) =>
+            s.name.toLowerCase().includes(service.toLowerCase()) ||
+            service.toLowerCase().includes(s.name.toLowerCase()),
+        )
+      }
+
+      if (foundService) {
+        serviceId = foundService.id
+        service = foundService.name
+        console.log(`ID de servicio recuperado de localStorage: ${serviceId}`)
+      }
+    }
+
+    // Si aún no tenemos un ID válido, mostrar error
+    if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+      alert("Error: No se pudo determinar el servicio seleccionado. Por favor, intente nuevamente.")
+      return
+    }
   }
 
-  const serviceInput = document.getElementById("service-input")
-  if (serviceInput) {
-    serviceInput.value = serviceName
-  }
+  if (serviceTypeElement) serviceTypeElement.textContent = `- ${service}`
+  if (serviceInput) serviceInput.value = service
 
-  const serviceIdInput = document.getElementById("service-id-input")
   if (serviceIdInput) {
     serviceIdInput.value = serviceId
+    console.log("ID de servicio establecido en el formulario:", serviceId)
   } else {
+    console.error("Elemento service-id-input no encontrado")
+
     // Crear el input si no existe
     const form = document.getElementById("reservation-form")
     if (form) {
@@ -418,10 +477,11 @@ function openReservationModal(serviceName, serviceId) {
       hiddenInput.name = "serviceId"
       hiddenInput.value = serviceId
       form.appendChild(hiddenInput)
+      console.log("Creado input oculto para service-id-input con valor:", serviceId)
     }
   }
 
-  // Configurar fecha mínima (hoy)
+  // Restablecer fecha mínima
   const today = new Date()
   const appointmentDate = document.getElementById("appointment-date")
   if (appointmentDate) {
@@ -435,21 +495,10 @@ function openReservationModal(serviceName, serviceId) {
     timeSelect.innerHTML = '<option value="">Seleccionar...</option>'
   }
 
-  // Limpiar mensajes
-  const messageContainer = document.getElementById("reservation-message")
-  if (messageContainer) {
-    messageContainer.style.display = "none"
-    messageContainer.textContent = ""
-  }
-
-  // Mostrar el modal
   modal.style.display = "block"
 }
 
-/**
- * Cierra un modal por su ID
- * @param {string} modalId - ID del modal a cerrar
- */
+// Cerrar modal
 function closeModal(modalId) {
   const modal = document.getElementById(modalId)
   if (!modal) return
@@ -458,394 +507,156 @@ function closeModal(modalId) {
 
   // Si es el modal de reserva, resetear el formulario
   if (modalId === "reservationModal") {
-    resetReservationForm()
-  }
-}
-
-/**
- * Resetea el formulario de reserva
- */
-function resetReservationForm() {
-  const form = document.getElementById("reservation-form")
-  if (!form) return
-
-  // Resetear campos
-  form.reset()
-
-  // Limpiar mensajes
-  const messageContainer = document.getElementById("reservation-message")
-  if (messageContainer) {
-    messageContainer.style.display = "none"
-    messageContainer.textContent = ""
-  }
-
-  // Limpiar errores
-  form.querySelectorAll(".error-input").forEach((el) => {
-    el.classList.remove("error-input")
-  })
-
-  form.querySelectorAll(".error-message").forEach((el) => {
-    el.remove()
-  })
-
-  // Resetear selector de horarios
-  const timeSelect = document.getElementById("appointment-time")
-  if (timeSelect) {
-    timeSelect.innerHTML = '<option value="">Seleccionar...</option>'
-  }
-}
-
-/**
- * Muestra una notificación en el formulario
- * @param {string} type - Tipo de notificación ('error' o 'success')
- * @param {string} message - Mensaje a mostrar
- */
-function showNotification(type, message) {
-  const messageContainer = document.getElementById("reservation-message")
-  if (!messageContainer) return
-
-  messageContainer.className = type === "error" ? "error-message" : "success-message"
-  messageContainer.textContent = message
-  messageContainer.style.display = "block"
-
-  // Hacer scroll al mensaje
-  messageContainer.scrollIntoView({ behavior: "smooth", block: "nearest" })
-}
-
-// =============================================
-// CONFIGURACIÓN DE UI
-// =============================================
-
-/**
- * Configura las tarjetas de servicios con precios y botones
- */
-function setupServiceCards() {
-  console.log("Configurando tarjetas de servicios...")
-
-  if (!veterinaryServices || veterinaryServices.length === 0) {
-    console.error("No hay servicios disponibles para configurar tarjetas")
-    return
-  }
-
-  // Crear un mapa de servicios por nombre para búsqueda rápida
-  const serviceMap = {}
-  veterinaryServices.forEach((service) => {
-    if (service && service.name) {
-      serviceMap[service.name.toLowerCase()] = service
+    const form = document.getElementById("reservation-form")
+    if (form) {
+      form.reset()
     }
-  })
-
-  // Configurar todas las tarjetas de servicios
-  const serviceCards = document.querySelectorAll(".service-card")
-  console.log(`Encontradas ${serviceCards.length} tarjetas de servicios`)
-
-  serviceCards.forEach((card) => {
-    try {
-      // 1. Obtener el nombre del servicio de la tarjeta
-      const titleElement = card.querySelector("h3")
-      if (!titleElement) {
-        console.warn("Tarjeta sin título encontrada, omitiendo...")
-        return
-      }
-
-      const serviceName = titleElement.textContent.trim()
-      const serviceNameLower = serviceName.toLowerCase()
-
-      // 2. Buscar el servicio correspondiente
-      const service = serviceMap[serviceNameLower] || findServiceByPartialName(serviceNameLower)
-
-      if (!service) {
-        console.warn(`No se encontró servicio para: "${serviceName}"`)
-        return
-      }
-
-      // 3. Actualizar el precio en la tarjeta
-      const priceElement = card.querySelector(".service-price")
-      if (priceElement) {
-        priceElement.textContent = formatCurrency(service.price)
-      }
-
-      // 4. Configurar botón de información
-      const infoButton = card.querySelector(".info-btn")
-      if (infoButton) {
-        infoButton.setAttribute("data-service-id", service.id)
-        infoButton.setAttribute("data-service", service.name)
-
-        // Eliminar listeners anteriores para evitar duplicados
-        infoButton.replaceWith(infoButton.cloneNode(true))
-        const newInfoButton = card.querySelector(".info-btn")
-
-        newInfoButton.addEventListener("click", () => {
-          openInfoModal(service.id)
-        })
-      }
-
-      // 5. Configurar botón de reserva
-      const reserveButton = card.querySelector(".reserve-btn")
-      if (reserveButton) {
-        reserveButton.setAttribute("data-service-id", service.id)
-        reserveButton.setAttribute("data-service", service.name)
-
-        // Eliminar listeners anteriores para evitar duplicados
-        reserveButton.replaceWith(reserveButton.cloneNode(true))
-        const newReserveButton = card.querySelector(".reserve-btn")
-
-        newReserveButton.addEventListener("click", () => {
-          openReservationModal(service.name, service.id)
-        })
-      }
-
-      console.log(`Tarjeta configurada para servicio: ${service.name} (ID: ${service.id})`)
-    } catch (error) {
-      console.error("Error al configurar tarjeta de servicio:", error)
-    }
-  })
+  }
 }
 
-/**
- * Busca un servicio por coincidencia parcial de nombre
- */
-function findServiceByPartialName(partialName) {
-  if (!partialName || !veterinaryServices) return null
-
-  return veterinaryServices.find(
-    (service) => service.name.toLowerCase().includes(partialName) || partialName.includes(service.name.toLowerCase()),
-  )
-}
-
-/**
- * Configura el formulario de reserva
- */
+// Configurar el formulario de reserva
 function setupReservationForm() {
-  console.log("Configurando formulario de reserva...")
-
   const form = document.getElementById("reservation-form")
+  const appointmentDate = document.getElementById("appointment-date")
+  const timeSelect = document.getElementById("appointment-time")
+
   if (!form) {
     console.error("Formulario de reserva no encontrado")
     return
   }
 
-  // Configurar selector de fecha
-  const dateInput = document.getElementById("appointment-date")
-  if (dateInput) {
-    // Eliminar listeners anteriores para evitar duplicados
-    dateInput.replaceWith(dateInput.cloneNode(true))
-    const newDateInput = document.getElementById("appointment-date")
-
-    // Establecer fecha mínima (hoy)
+  // Configurar la fecha mínima como hoy
+  if (appointmentDate) {
     const today = new Date()
-    newDateInput.min = today.toISOString().split("T")[0]
+    appointmentDate.min = today.toISOString().split("T")[0]
 
-    // Cuando cambia la fecha, cargar horarios disponibles
-    newDateInput.addEventListener("change", function () {
+    // Cuando cambia la fecha, cargar horas disponibles
+    appointmentDate.addEventListener("change", function () {
       loadAvailableTimes(this.value)
     })
   }
 
-  // Configurar envío del formulario
-  form.removeEventListener("submit", handleReservationSubmit)
-  form.addEventListener("submit", handleReservationSubmit)
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault()
 
-  console.log("Formulario de reserva configurado correctamente")
-}
-
-/**
- * Maneja el envío del formulario de reserva
- */
-async function handleReservationSubmit(event) {
-  event.preventDefault()
-
-  // Validar el formulario
-  if (!validateReservationForm()) {
-    return
-  }
-
-  // Obtener el ID del servicio
-  const serviceIdInput = document.getElementById("service-id-input")
-  const serviceId = serviceIdInput ? Number.parseInt(serviceIdInput.value) : currentServiceId
-
-  if (!serviceId || isNaN(serviceId)) {
-    showNotification("error", "ID de servicio inválido. Por favor, intente nuevamente.")
-    console.error("ID de servicio inválido:", serviceIdInput ? serviceIdInput.value : "No encontrado")
-    return
-  }
-
-  // Recopilar datos del formulario
-  const form = event.target
-  const formData = new FormData(form)
-
-  const reservationData = {
-    service_id: serviceId,
-    pet_owner: formData.get("petOwner"),
-    pet_name: formData.get("petName"),
-    pet_type: formData.get("petType"),
-    appointment_date: formData.get("appointmentDate"),
-    appointment_time: formData.get("appointmentTime"),
-    notes: formData.get("notes") || "",
-  }
-
-  console.log("Datos de reserva a enviar:", reservationData)
-
-  // Mostrar indicador de carga
-  const submitButton = form.querySelector('button[type="submit"]')
-  const originalButtonText = submitButton.textContent
-  submitButton.disabled = true
-  submitButton.textContent = "Procesando..."
-
-  try {
-    // Enviar datos a la API
-    const result = await createReservation(reservationData)
-
-    if (result.success) {
-      showNotification("success", "¡Reserva realizada con éxito! En breve recibirás un correo de confirmación.")
-
-      // Cerrar el modal después de un tiempo
-      setTimeout(() => {
-        closeModal("reservationModal")
-      }, 3000)
-    } else {
-      showNotification("error", result.error || "Error en la reserva")
+    // Validar el formulario
+    if (!validateReservationForm()) {
+      return
     }
-  } catch (error) {
-    showNotification("error", error.message || "Error al procesar la reserva")
-  } finally {
-    // Restaurar botón
-    submitButton.disabled = false
-    submitButton.textContent = originalButtonText
-  }
+
+    // Obtener el ID del servicio y verificar que sea válido
+    const serviceIdInput = document.getElementById("service-id-input")
+    const serviceId = serviceIdInput ? Number.parseInt(serviceIdInput.value) : 0
+
+    if (!serviceId || isNaN(serviceId) || serviceId <= 0) {
+      showErrorMessage("ID de servicio inválido. Por favor, intente nuevamente.")
+      console.error("ID de servicio inválido:", serviceIdInput ? serviceIdInput.value : "No encontrado")
+      return
+    }
+
+    // Recopilar datos del formulario
+    const formData = new FormData(form)
+    const reservationData = {
+      service_id: serviceId,
+      pet_owner: formData.get("petOwner"),
+      pet_name: formData.get("petName"),
+      pet_type: formData.get("petType"),
+      appointment_date: formData.get("appointmentDate"),
+      appointment_time: formData.get("appointmentTime"),
+      notes: formData.get("notes") || "",
+    }
+
+    // Imprimir los datos para depuración
+    console.log("Datos de reserva a enviar:", reservationData)
+
+    // Enviar datos a la API
+    try {
+      const result = await submitReservation(reservationData)
+      if (result.success) {
+        showSuccessMessage()
+
+        // Cerrar el modal después de un tiempo
+        setTimeout(() => {
+          closeModal("reservationModal")
+          resetReservationForm()
+        }, 3000)
+      } else {
+        showErrorMessage(result.error || "Error en la reserva")
+      }
+    } catch (error) {
+      showErrorMessage(error.message)
+    }
+  })
 }
 
-/**
- * Carga los horarios disponibles para una fecha
- */
+// Cargar horas disponibles para citas
 async function loadAvailableTimes(selectedDate) {
-  if (!selectedDate) return
-
   const timeSelect = document.getElementById("appointment-time")
-  if (!timeSelect) return
-
-  // Obtener el ID del servicio
   const serviceIdInput = document.getElementById("service-id-input")
-  const serviceId = serviceIdInput ? Number.parseInt(serviceIdInput.value) : currentServiceId
 
-  // Mostrar indicador de carga
+  if (!timeSelect || !selectedDate) return
+
+  // Limpiar opciones actuales
+  timeSelect.innerHTML = '<option value="">Seleccionar...</option>'
   timeSelect.disabled = true
-  timeSelect.innerHTML = '<option value="">Cargando horarios...</option>'
+
+  // Añadir indicador de carga
+  const loadingOption = document.createElement("option")
+  loadingOption.textContent = "Cargando horarios..."
+  timeSelect.appendChild(loadingOption)
 
   try {
-    // Obtener horarios disponibles usando la función de la API
-    const timeSlots = await fetchAvailableTimeSlots(selectedDate, serviceId)
+    // Preparar datos para la solicitud
+    const requestData = {
+      date: selectedDate,
+      service_id: serviceIdInput ? Number.parseInt(serviceIdInput.value) : undefined,
+    }
 
-    // Limpiar y actualizar opciones
+    // Enviar solicitud a la API para verificar disponibilidad
+    const response = await fetch(
+      "https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/availability/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error("Error al cargar los horarios disponibles")
+    }
+
+    const availabilityData = await response.json()
+
+    // Limpiar opciones
     timeSelect.innerHTML = '<option value="">Seleccionar horario...</option>'
 
-    if (timeSlots && timeSlots.length > 0) {
-      // Filtrar y ordenar horarios disponibles
-      const availableSlots = timeSlots.filter((slot) => slot.available).sort((a, b) => a.time.localeCompare(b.time))
-
-      if (availableSlots.length > 0) {
-        availableSlots.forEach((slot) => {
+    // Añadir las opciones de horarios disponibles
+    if (availabilityData.time_slots && availabilityData.time_slots.length > 0) {
+      availabilityData.time_slots.forEach((slot) => {
+        if (slot.available) {
           const option = document.createElement("option")
           option.value = slot.time
           option.textContent = formatTime(slot.time)
           timeSelect.appendChild(option)
-        })
-      } else {
-        const noTimesOption = document.createElement("option")
-        noTimesOption.disabled = true
-        noTimesOption.textContent = "No hay horarios disponibles"
-        timeSelect.appendChild(noTimesOption)
-      }
+        }
+      })
     } else {
       const noTimesOption = document.createElement("option")
-      noTimesOption.disabled = true
       noTimesOption.textContent = "No hay horarios disponibles"
       timeSelect.appendChild(noTimesOption)
     }
   } catch (error) {
-    console.error("Error al cargar horarios:", error)
+    console.error("Error:", error)
     timeSelect.innerHTML = '<option value="">Error al cargar horarios</option>'
   } finally {
     timeSelect.disabled = false
   }
 }
 
-/**
- * Valida el formulario de reserva
- */
-function validateReservationForm() {
-  const form = document.getElementById("reservation-form")
-  if (!form) return false
-
-  // Limpiar errores anteriores
-  form.querySelectorAll(".error-input").forEach((el) => {
-    el.classList.remove("error-input")
-  })
-
-  form.querySelectorAll(".error-message").forEach((el) => {
-    el.remove()
-  })
-
-  // Verificar campos obligatorios
-  const requiredFields = ["petOwner", "petName", "petType", "appointmentDate", "appointmentTime"]
-  let isValid = true
-
-  requiredFields.forEach((fieldName) => {
-    const input = form.querySelector(`[name="${fieldName}"]`)
-    if (!input || !input.value.trim()) {
-      isValid = false
-      highlightError(input)
-    }
-  })
-
-  if (!isValid) {
-    showNotification("error", "Por favor, complete todos los campos obligatorios.")
-  }
-
-  return isValid
-}
-
-/**
- * Resalta un campo con error
- */
-function highlightError(input) {
-  if (!input) return
-
-  input.classList.add("error-input")
-
-  // Añadir mensaje de error
-  const container = input.closest(".form-group")
-  if (container) {
-    const errorMsg = document.createElement("div")
-    errorMsg.className = "error-message"
-    errorMsg.style.fontSize = "0.8rem"
-    errorMsg.style.color = "#dc3545"
-    errorMsg.style.marginTop = "5px"
-    errorMsg.textContent = "Este campo es obligatorio"
-    container.appendChild(errorMsg)
-  }
-}
-
-// =============================================
-// UTILIDADES
-// =============================================
-
-/**
- * Formatea un valor numérico como moneda (COP)
- * @param {number} value - Valor a formatear
- * @returns {string} Valor formateado
- */
-function formatCurrency(value) {
-  if (value === undefined || value === null) return "$ 0"
-
-  return `$ ${Math.round(value)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
-}
-
-/**
- * Formatea una hora de 24h a formato 12h
- */
+// Formatear la hora para mostrar (de 24h a 12h)
 function formatTime(time) {
   try {
     const [hours, minutes] = time.split(":").map((num) => Number.parseInt(num))
@@ -865,213 +676,174 @@ function formatTime(time) {
   }
 }
 
-// =============================================
-// HERRAMIENTAS DE DEPURACIÓN
-// =============================================
+// Validar el formulario de reserva
+function validateReservationForm() {
+  const form = document.getElementById("reservation-form")
 
-/**
- * Añade un botón de depuración a la página
- */
-function addDebugButton() {
-  const button = document.createElement("button")
-  button.textContent = "🔍 Debug"
-  button.style.position = "fixed"
-  button.style.bottom = "20px"
-  button.style.right = "20px"
-  button.style.zIndex = "9999"
-  button.style.padding = "8px 12px"
-  button.style.backgroundColor = "#007bff"
-  button.style.color = "white"
-  button.style.border = "none"
-  button.style.borderRadius = "4px"
-  button.style.cursor = "pointer"
+  // Verificar campos obligatorios
+  const requiredFields = ["petOwner", "petName", "petType", "appointmentDate", "appointmentTime"]
+  let isValid = true
 
-  button.addEventListener("click", showDebugPanel)
-
-  document.body.appendChild(button)
-}
-
-/**
- * Muestra un panel de depuración con información útil
- */
-function showDebugPanel() {
-  // Crear el panel si no existe
-  let panel = document.getElementById("debug-panel")
-
-  if (!panel) {
-    panel = document.createElement("div")
-    panel.id = "debug-panel"
-    panel.style.position = "fixed"
-    panel.style.top = "50%"
-    panel.style.left = "50%"
-    panel.style.transform = "translate(-50%, -50%)"
-    panel.style.backgroundColor = "white"
-    panel.style.padding = "20px"
-    panel.style.borderRadius = "8px"
-    panel.style.boxShadow = "0 0 20px rgba(0,0,0,0.3)"
-    panel.style.zIndex = "10000"
-    panel.style.maxWidth = "80%"
-    panel.style.maxHeight = "80%"
-    panel.style.overflow = "auto"
-
-    document.body.appendChild(panel)
-  }
-
-  // Recopilar información de depuración
-  const debugInfo = collectDebugInfo()
-
-  // Actualizar contenido del panel
-  panel.innerHTML = `
-    <h2 style="margin-top:0">Información de Depuración</h2>
-    <button id="close-debug" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
-    
-    <h3>Servicios Veterinarios</h3>
-    <pre style="background:#f5f5f5;padding:10px;overflow:auto;max-height:200px">${JSON.stringify(debugInfo.services, null, 2)}</pre>
-    
-    <h3>Elementos DOM</h3>
-    <ul>
-      ${debugInfo.domElements.map((item) => `<li>${item.name}: ${item.found ? "✅" : "❌"} ${item.details || ""}</li>`).join("")}
-    </ul>
-    
-    <h3>Estado Actual</h3>
-    <ul>
-      <li>Modal de información: ${debugInfo.modals.infoModal ? "✅" : "❌"}</li>
-      <li>Modal de reserva: ${debugInfo.modals.reservationModal ? "✅" : "❌"}</li>
-      <li>Formulario de reserva: ${debugInfo.forms.reservationForm ? "✅" : "❌"}</li>
-    </ul>
-    
-    <h3>Acciones</h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button onclick="reloadServices()" style="padding:8px 12px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer">Recargar Servicios</button>
-      <button onclick="resetLocalStorage()" style="padding:8px 12px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer">Limpiar LocalStorage</button>
-      <button onclick="testConnection()" style="padding:8px 12px;background:#17a2b8;color:white;border:none;border-radius:4px;cursor:pointer">Probar Conexión API</button>
-    </div>
-    
-    <div id="debug-result" style="margin-top:15px;padding:10px;background:#f8f9fa;border-radius:4px;display:none"></div>
-  `
-
-  // Añadir event listeners
-  document.getElementById("close-debug").addEventListener("click", () => {
-    panel.remove()
+  requiredFields.forEach((field) => {
+    const input = form.querySelector(`[name="${field}"]`)
+    if (input && !input.value.trim()) {
+      isValid = false
+      highlightError(input)
+    } else if (input) {
+      removeHighlight(input)
+    }
   })
 
-  // Exponer funciones de depuración
-  window.reloadServices = async () => {
-    const resultDiv = document.getElementById("debug-result")
-    resultDiv.style.display = "block"
-    resultDiv.innerHTML = "Recargando servicios..."
+  if (!isValid) {
+    showErrorMessage("Por favor, complete todos los campos obligatorios.")
+  }
 
-    try {
-      localStorage.removeItem("veterinaryServices")
-      const success = await loadServices()
-      if (success) {
-        setupServiceCards()
-        resultDiv.innerHTML = "✅ Servicios recargados correctamente"
-      } else {
-        resultDiv.innerHTML = "❌ Error al recargar servicios"
-      }
-    } catch (error) {
-      resultDiv.innerHTML = `❌ Error: ${error.message}`
+  return isValid
+}
+
+// Resaltar campo con error
+function highlightError(input) {
+  input.classList.add("error-input")
+
+  // Si hay un contenedor padre, añadir mensaje de error
+  const parentContainer = input.closest(".form-group")
+  if (parentContainer) {
+    // Eliminar mensaje de error anterior si existe
+    const existingError = parentContainer.querySelector(".error-message")
+    if (existingError) {
+      existingError.remove()
     }
+
+    // Añadir nuevo mensaje de error
+    const errorMessage = document.createElement("div")
+    errorMessage.className = "error-message"
+    errorMessage.textContent = "Este campo es obligatorio"
+    parentContainer.appendChild(errorMessage)
   }
+}
 
-  window.resetLocalStorage = () => {
-    const resultDiv = document.getElementById("debug-result")
-    resultDiv.style.display = "block"
+// Quitar resaltado de error
+function removeHighlight(input) {
+  input.classList.remove("error-input")
 
-    localStorage.removeItem("veterinaryServices")
-    resultDiv.innerHTML = "✅ LocalStorage limpiado"
-  }
-
-  window.testConnection = async () => {
-    const resultDiv = document.getElementById("debug-result")
-    resultDiv.style.display = "block"
-    resultDiv.innerHTML = "Probando conexión..."
-
-    try {
-      const response = await fetch(SERVICES_ENDPOINT)
-      const status = response.ok ? "✅" : "❌"
-      resultDiv.innerHTML = `${status} Estado: ${response.status} ${response.statusText}`
-
-      if (response.ok) {
-        const data = await response.json()
-        resultDiv.innerHTML += `<br>Recibidos ${data.length} servicios`
-      }
-    } catch (error) {
-      resultDiv.innerHTML = `❌ Error de conexión: ${error.message}`
+  // Eliminar mensaje de error si existe
+  const parentContainer = input.closest(".form-group")
+  if (parentContainer) {
+    const errorMessage = parentContainer.querySelector(".error-message")
+    if (errorMessage) {
+      errorMessage.remove()
     }
   }
 }
 
-/**
- * Recopila información de depuración
- */
-function collectDebugInfo() {
-  // Obtener servicios del localStorage
-  let services = []
+// Enviar datos de reserva a la API
+async function submitReservation(reservationData) {
   try {
-    const servicesJson = localStorage.getItem("veterinaryServices")
-    if (servicesJson) {
-      const parsedData = JSON.parse(servicesJson)
-      services = parsedData.data || parsedData
+    // Verificar que el ID del servicio sea válido
+    if (!reservationData.service_id || isNaN(reservationData.service_id) || reservationData.service_id <= 0) {
+      throw new Error("ID de servicio inválido")
     }
-  } catch (e) {
-    console.error("Error al parsear servicios:", e)
-  }
 
-  // Verificar elementos DOM importantes
-  const domElements = [
-    {
-      name: "Tarjetas de servicios",
-      found: document.querySelectorAll(".service-card").length > 0,
-      details: `Encontradas: ${document.querySelectorAll(".service-card").length}`,
-    },
-    {
-      name: "Botones de información",
-      found: document.querySelectorAll(".info-btn").length > 0,
-      details: `Encontrados: ${document.querySelectorAll(".info-btn").length}`,
-    },
-    {
-      name: "Botones de reserva",
-      found: document.querySelectorAll(".reserve-btn").length > 0,
-      details: `Encontrados: ${document.querySelectorAll(".reserve-btn").length}`,
-    },
-    {
-      name: "Elementos de precio",
-      found: document.querySelectorAll(".service-price").length > 0,
-      details: `Encontrados: ${document.querySelectorAll(".service-price").length}`,
-    },
-  ]
+    // Obtener el token de autenticación del localStorage o donde lo tengas almacenado
+    const token = localStorage.getItem("token") // Ajusta esto según donde almacenes tu token
 
-  // Verificar modales
-  const modals = {
-    infoModal: document.getElementById("infoModal") !== null,
-    reservationModal: document.getElementById("reservationModal") !== null,
-  }
+    const headers = {
+      "Content-Type": "application/json",
+    }
 
-  // Verificar formularios
-  const forms = {
-    reservationForm: document.getElementById("reservation-form") !== null,
-  }
+    // Añadir el token de autorización si existe
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+    }
 
-  return {
-    services,
-    domElements,
-    modals,
-    forms,
+    console.log("Enviando solicitud con headers:", headers)
+    console.log("Datos de reserva:", JSON.stringify(reservationData))
+
+    const response = await fetch(
+      "https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/reservations/",
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(reservationData),
+      },
+    )
+
+    // Imprimir información de la respuesta para depuración
+    console.log("Respuesta del servidor:", response.status, response.statusText)
+
+    const responseData = await response.json()
+    console.log("Datos de respuesta:", responseData)
+
+    if (!response.ok) {
+      throw new Error(responseData.detail || "Error al realizar la reserva")
+    }
+
+    return {
+      success: true,
+      data: responseData,
+    }
+  } catch (error) {
+    console.error("Error en submitReservation:", error)
+    return {
+      success: false,
+      error: error.message,
+    }
   }
 }
 
-// =============================================
-// EXPORTAR FUNCIONES GLOBALES
-// =============================================
+// Mostrar mensaje de éxito
+function showSuccessMessage() {
+  const messageContainer = document.getElementById("reservation-message")
+  if (!messageContainer) return
 
-// Exponer funciones necesarias al ámbito global
+  messageContainer.className = "success-message"
+  messageContainer.textContent = "¡Reserva realizada con éxito! En breve recibirás un correo de confirmación."
+  messageContainer.style.display = "block"
+}
+
+// Mostrar mensaje de error
+function showErrorMessage(message) {
+  const messageContainer = document.getElementById("reservation-message")
+  if (!messageContainer) return
+
+  messageContainer.className = "error-message"
+  messageContainer.textContent = message || "Ha ocurrido un error en el proceso de reserva."
+  messageContainer.style.display = "block"
+}
+
+// Resetear formulario de reserva
+function resetReservationForm() {
+  const form = document.getElementById("reservation-form")
+  if (!form) return
+
+  form.reset()
+
+  // Limpiar mensajes
+  const messageContainer = document.getElementById("reservation-message")
+  if (messageContainer) {
+    messageContainer.style.display = "none"
+    messageContainer.textContent = ""
+  }
+
+  // Limpiar errores
+  const errorInputs = form.querySelectorAll(".error-input")
+  errorInputs.forEach((input) => removeHighlight(input))
+
+  // Resetear selectores
+  const timeSelect = document.getElementById("appointment-time")
+  if (timeSelect) {
+    timeSelect.innerHTML = '<option value="">Seleccionar...</option>'
+  }
+}
+
+// Exponer funciones al ámbito global para que puedan ser llamadas desde HTML
+window.closeModal = closeModal
 window.openInfoModal = openInfoModal
 window.openReservationModal = openReservationModal
-window.closeModal = closeModal
-window.loadServices = loadServices
-window.setupServiceCards = setupServiceCards
-window.handleReservationSubmit = handleReservationSubmit
-window.validateReservationForm = validateReservationForm
+
+// Inicializar cuando se carga el documento
+document.addEventListener("DOMContentLoaded", () => {
+  // Configurar el formulario de reserva
+  setupReservationForm()
+})
 
