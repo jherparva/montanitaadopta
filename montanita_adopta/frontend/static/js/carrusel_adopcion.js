@@ -1,3 +1,7 @@
+// Importa las funciones necesarias desde apiConnector.js
+import { apiConnector } from "./apiConnector.js"
+import { redirigirAFormulario } from "./utils.js"
+
 // Estado global para carruseles
 let carouselDogs = [] // Perros para el carrusel
 let carouselCats = [] // Gatos para el carrusel
@@ -77,9 +81,15 @@ function updateDogCarousel() {
     const item = document.createElement("div")
     item.className = `carousel-item ${index === 0 || index === 1 ? "active" : ""}`
 
+    // Usar la URL base correcta para las imágenes
+    let imagenUrl = dog.imagen || "/static/img/placeholder_pet.jpg"
+    if (imagenUrl && !imagenUrl.startsWith("http")) {
+      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+    }
+
     item.innerHTML = `
             <div class="animal">
-                <img src="${dog.imagen ? (dog.imagen.startsWith("http") ? dog.imagen : "https://montanitaadopta.onrender.com" + dog.imagen) : "/static/img/placeholder_pet.jpg"}" alt="${dog.nombre}">
+                <img src="${imagenUrl}" alt="${dog.nombre}">
                 <h4>${dog.nombre}</h4>
                 <p>${dog.descripcion ? dog.descripcion.substring(0, 30) + "..." : "Un perro esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${dog.id}" type="button">
@@ -114,9 +124,15 @@ function updateCatCarousel() {
     const item = document.createElement("div")
     item.className = `carousel-item ${index === 0 || index === 1 ? "active" : ""}`
 
+    // Usar la URL base correcta para las imágenes
+    let imagenUrl = cat.imagen || "/static/img/placeholder_pet.jpg"
+    if (imagenUrl && !imagenUrl.startsWith("http")) {
+      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+    }
+
     item.innerHTML = `
             <div class="animal">
-                <img src="${cat.imagen ? (cat.imagen.startsWith("http") ? cat.imagen : "https://montanitaadopta.onrender.com" + cat.imagen) : "/static/img/placeholder_pet.jpg"}" alt="${cat.nombre}">
+                <img src="${imagenUrl}" alt="${cat.nombre}">
                 <h4>${cat.nombre}</h4>
                 <p>${cat.descripcion ? cat.descripcion.substring(0, 30) + "..." : "Un gato esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${cat.id}" type="button">
@@ -237,3 +253,4 @@ function verificarSesionYRedirigir(mascotaId) {
     }
   }
 }
+

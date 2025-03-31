@@ -1,3 +1,9 @@
+// Importa el apiConnector (asumiendo que está en un archivo separado)
+import { apiConnector } from "./apiConnector.js" // Ajusta la ruta según tu estructura de archivos
+
+// Importa la función verificarSesionYRedirigir (asumiendo que está en un archivo separado)
+import { verificarSesionYRedirigir } from "./auth.js" // Ajusta la ruta según tu estructura de archivos
+
 // Estado global
 let currentPage = 1
 let totalPages = 1
@@ -235,10 +241,16 @@ function renderAnimals(animals) {
   animals.forEach((animal) => {
     const isFavorite = favorites.includes(animal.id.toString())
 
+    // Formatear la URL de la imagen correctamente
+    let imagenUrl = animal.imagen || "/static/img/placeholder_pet.jpg"
+    if (imagenUrl && !imagenUrl.startsWith("http")) {
+      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+    }
+
     html += `
             <div class="animal-card" data-id="${animal.id}">
                 <div class="animal-image">
-                    <img src="${animal.imagen || "/static/img/placeholder_pet.jpg"}" alt="${animal.nombre}">
+                    <img src="${imagenUrl}" alt="${animal.nombre}">
                     <button class="favorite-toggle ${isFavorite ? "active" : ""}" data-id="${animal.id}">
                         <i class="fas fa-heart"></i>
                     </button>
@@ -375,9 +387,15 @@ async function openAnimalModal(animalId) {
       throw new Error("No se encontró información del animal")
     }
 
+    // Formatear la URL de la imagen correctamente
+    let imagenUrl = animalDetails.imagen || "/static/img/placeholder_pet.jpg"
+    if (imagenUrl && !imagenUrl.startsWith("http")) {
+      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+    }
+
     // Actualizar el contenido del modal con los detalles del animal
     modalName.textContent = animalDetails.nombre
-    modalImage.src = animalDetails.imagen || "/static/img/placeholder_pet.jpg"
+    modalImage.src = imagenUrl
     modalSpecies.textContent = animalDetails.especie === "dog" ? "Perro" : "Gato"
     modalAge.textContent = animalDetails.edad || "Desconocida"
     modalSize.textContent = animalDetails.tamano || "Mediano"
@@ -516,3 +534,4 @@ function showFavorites() {
     renderAnimals(favoriteAnimals)
   })
 }
+

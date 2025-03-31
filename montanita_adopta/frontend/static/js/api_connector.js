@@ -7,6 +7,9 @@ class APIConnector {
     this.token = localStorage.getItem("token") || ""
     console.log("Token al inicializar:", this.token)
 
+    // URL base para imágenes - Actualizada al dominio correcto
+    this.imageBaseURL = "https://webmontanitaadopta.onrender.com"
+
     // Inicializar listeners después de que se cargue el DOM
     document.addEventListener("DOMContentLoaded", () => this.setupEventListeners())
   }
@@ -224,6 +227,30 @@ class APIConnector {
       message: errorData.detail || "Error desconocido",
       data: errorData,
     }
+  }
+
+  /**
+   * Formatea la URL de una imagen para asegurar que sea una URL completa
+   * @param {string} imagePath - Ruta de la imagen
+   * @returns {string} - URL completa de la imagen
+   */
+  formatImageUrl(imagePath) {
+    if (!imagePath) {
+      return "/static/img/placeholder_pet.jpg"
+    }
+
+    // Si ya es una URL completa, devolverla tal cual
+    if (imagePath.startsWith("http")) {
+      return imagePath
+    }
+
+    // Si comienza con /, añadir la URL base
+    if (imagePath.startsWith("/")) {
+      return `${this.imageBaseURL}${imagePath}`
+    }
+
+    // Si no comienza con /, añadir la URL base y /
+    return `${this.imageBaseURL}/${imagePath}`
   }
 
   // ============= MÉTODOS DE AUTENTICACIÓN =============
@@ -714,10 +741,10 @@ class APIConnector {
           text: response.message || "Si el correo está registrado, recibirás un código de recuperación",
           confirmButtonText: "Continuar",
         }).then(() => {
-          closeModal("resetPasswordModal")
+          this.closeModal("resetPasswordModal")
           // Pre-llenar el correo en el modal de verificación
           document.getElementById("verify-email").value = email
-          openModal("verifyCodeModal")
+          this.openModal("verifyCodeModal")
         })
       } catch (error) {
         Swal.fire({
@@ -804,6 +831,22 @@ class APIConnector {
       const result = await this.get("mascotas", params)
       console.log("Datos de mascotas recibidos:", result)
 
+      // Procesar las imágenes para asegurar URLs correctas
+      if (result && result.items) {
+        result.items = result.items.map((mascota) => {
+          if (mascota.imagen) {
+            mascota.imagen = this.formatImageUrl(mascota.imagen)
+          }
+          return mascota
+        })
+      } else if (Array.isArray(result)) {
+        result.forEach((mascota) => {
+          if (mascota.imagen) {
+            mascota.imagen = this.formatImageUrl(mascota.imagen)
+          }
+        })
+      }
+
       // Asegurarse de que siempre devuelva un array, incluso si hay un error
       if (!result || (!result.items && !Array.isArray(result))) {
         console.warn("La respuesta de mascotas no tiene el formato esperado:", result)
@@ -823,7 +866,19 @@ class APIConnector {
    * @returns {Promise} - Promesa con los datos de la mascota
    */
   async getMascota(id) {
-    return this.get(`mascotas/${id}`)
+    try {
+      const mascota = await this.get(`mascotas/${id}`)
+
+      // Formatear la URL de la imagen
+      if (mascota && mascota.imagen) {
+        mascota.imagen = this.formatImageUrl(mascota.imagen)
+      }
+
+      return mascota
+    } catch (error) {
+      console.error(`Error al obtener mascota con ID ${id}:`, error)
+      throw error
+    }
   }
 
   /**
@@ -981,3 +1036,9 @@ async function updateUserUI() {
     document.getElementById("user-menu").style.display = "none"
   }
 }
+
+// Declarar las variables updateMenu, closeModal y openModal en el ámbito global
+window.updateMenu = window.updateMenu || (() => {})
+window.closeModal = window.closeModal || (() => {})
+window.openModal = window.openModal || (() => {})
+
