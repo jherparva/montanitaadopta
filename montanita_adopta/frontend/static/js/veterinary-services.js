@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("Documento cargado, inicializando...")
+  
     // Cargar los servicios veterinarios
     loadVeterinaryServices()
   
@@ -7,11 +9,15 @@ document.addEventListener("DOMContentLoaded", () => {
   
     // Configurar el formulario de reserva
     setupReservationForm()
+  
+    // Configurar botones de más información
+    setupInfoButtons()
   })
   
   // Función para cargar los servicios veterinarios desde la API
   async function loadVeterinaryServices() {
     try {
+      console.log("Cargando servicios veterinarios...")
       const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/")
   
       if (!response.ok) {
@@ -19,29 +25,47 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   
       const services = await response.json()
+      console.log("Servicios cargados:", services)
   
       // Actualizar los servicios en la página
       if (services && services.length > 0) {
-        const serviceButtons = document.querySelectorAll(".reserve-btn")
-        const servicePrices = document.querySelectorAll(".service-price")
+        // Guardar los servicios en localStorage para uso posterior
+        localStorage.setItem("veterinaryServices", JSON.stringify(services))
+  
+        const serviceCards = document.querySelectorAll(".service-card")
+        console.log(`Encontradas ${serviceCards.length} tarjetas de servicio`)
   
         services.forEach((service, index) => {
-          // Si hay botones disponibles, actualizar su información
-          if (index < serviceButtons.length) {
-            const button = serviceButtons[index]
-            button.setAttribute("data-service-id", service.id)
-            button.setAttribute("data-service", service.name)
-          }
+          // Si hay tarjetas disponibles, actualizar su información
+          if (index < serviceCards.length) {
+            const card = serviceCards[index]
   
-          // Actualizar precio si existe el elemento
-          if (index < servicePrices.length) {
-            const priceElement = servicePrices[index]
-            priceElement.textContent = formatColombiaPesos(service.price)
+            // Actualizar botón de reserva
+            const reserveBtn = card.querySelector(".reserve-btn")
+            if (reserveBtn) {
+              reserveBtn.setAttribute("data-service-id", service.id)
+              reserveBtn.setAttribute("data-service", service.name)
+              console.log(`Botón de reserva actualizado: ID=${service.id}, Nombre=${service.name}`)
+            }
+  
+            // Actualizar botón de información
+            const infoBtn = card.querySelector(".info-btn")
+            if (infoBtn) {
+              infoBtn.setAttribute("data-service-id", service.id)
+              infoBtn.setAttribute("data-service", service.name)
+            }
+  
+            // Actualizar precio
+            const priceElement = card.querySelector(".service-price")
+            if (priceElement) {
+              priceElement.textContent = formatColombiaPesos(service.price)
+              console.log(`Precio actualizado: ${formatColombiaPesos(service.price)}`)
+            }
           }
         })
       }
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error al cargar servicios:", error)
     }
   }
   
@@ -57,38 +81,170 @@ document.addEventListener("DOMContentLoaded", () => {
   // Configurar los botones de reserva
   function setupReservationButtons() {
     const reserveButtons = document.querySelectorAll(".reserve-btn")
+    console.log(`Configurando ${reserveButtons.length} botones de reserva`)
   
     reserveButtons.forEach((button) => {
       button.addEventListener("click", function () {
         const service = this.getAttribute("data-service")
         const serviceId = this.getAttribute("data-service-id")
+        console.log(`Botón de reserva clickeado: servicio=${service}, id=${serviceId}`)
         openReservationModal(service, serviceId)
       })
     })
   }
   
+  // Configurar los botones de más información
+  function setupInfoButtons() {
+    const infoButtons = document.querySelectorAll(".info-btn")
+    console.log(`Configurando ${infoButtons.length} botones de información`)
+  
+    infoButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const serviceId = this.getAttribute("data-service-id")
+        console.log(`Botón de información clickeado: id=${serviceId}`)
+        openInfoModal(serviceId)
+      })
+    })
+  }
+  
+  // Abrir modal de información
+  function openInfoModal(serviceId) {
+    // Obtener los servicios del localStorage
+    const servicesJson = localStorage.getItem("veterinaryServices")
+    if (!servicesJson) {
+      console.error("No se encontraron servicios en localStorage")
+      return
+    }
+  
+    const services = JSON.parse(servicesJson)
+    const service = services.find((s) => s.id == serviceId)
+  
+    if (!service) {
+      console.error(`No se encontró el servicio con ID ${serviceId}`)
+      return
+    }
+  
+    // Obtener el modal de información
+    const modal = document.getElementById("infoModal")
+    if (!modal) {
+      console.error("Modal de información no encontrado")
+      // Si no existe el modal, lo creamos dinámicamente
+      createInfoModal()
+      return
+    }
+  
+    // Actualizar contenido del modal
+    const modalTitle = modal.querySelector(".modal-title")
+    const modalDescription = modal.querySelector(".modal-description")
+    const modalPrice = modal.querySelector(".modal-price")
+    const modalDuration = modal.querySelector(".modal-duration")
+  
+    if (modalTitle) modalTitle.textContent = service.name
+    if (modalDescription) modalDescription.textContent = service.description || "No hay descripción disponible"
+    if (modalPrice) modalPrice.textContent = `Precio: ${formatColombiaPesos(service.price)}`
+    if (modalDuration) modalDuration.textContent = `Duración: ${service.duration_minutes} minutos`
+  
+    // Mostrar el modal
+    modal.style.display = "block"
+  }
+  
+  // Crear modal de información dinámicamente si no existe
+  function createInfoModal() {
+    const modalHtml = `
+      <div id="infoModal" class="modal">
+          <div class="modal-content">
+              <span class="close" onclick="closeModal('infoModal')">&times;</span>
+              <h2 class="modal-title">Información del Servicio</h2>
+              <p class="modal-description"></p>
+              <p class="modal-price"></p>
+              <p class="modal-duration"></p>
+              <button class="btn btn-primary" onclick="closeModal('infoModal')">Cerrar</button>
+          </div>
+      </div>
+      `
+  
+    // Añadir el modal al body
+    document.body.insertAdjacentHTML("beforeend", modalHtml)
+  
+    // Añadir estilos si es necesario
+    const style = document.createElement("style")
+    style.textContent = `
+      .modal {
+          display: none;
+          position: fixed;
+          z-index: 1000;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgba(0,0,0,0.4);
+      }
+      .modal-content {
+          background-color: #fefefe;
+          margin: 15% auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80%;
+          max-width: 500px;
+          border-radius: 5px;
+      }
+      .close {
+          color: #aaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+          cursor: pointer;
+      }
+      .close:hover {
+          color: black;
+      }
+      `
+    document.head.appendChild(style)
+  }
+  
   // Abrir el modal de reserva
   function openReservationModal(service, serviceId) {
+    console.log(`Abriendo modal de reserva: servicio=${service}, id=${serviceId}`)
+  
     const modal = document.getElementById("reservationModal")
     const serviceTypeElement = document.getElementById("service-type")
     const serviceInput = document.getElementById("service-input")
     const serviceIdInput = document.getElementById("service-id-input")
   
-    if (!modal) return
-  
-    // Verificar que el ID del servicio sea válido
-    if (!serviceId || isNaN(Number.parseInt(serviceId))) {
-      console.error("ID de servicio inválido:", serviceId)
-      alert("Error: ID de servicio inválido")
+    if (!modal) {
+      console.error("Modal de reserva no encontrado")
       return
     }
   
-    serviceTypeElement.textContent = `- ${service}`
-    serviceInput.value = service
+    // Verificar que el ID del servicio sea válido
+    if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+      console.error("ID de servicio inválido:", serviceId)
+  
+      // Intentar obtener el ID del servicio desde localStorage
+      const servicesJson = localStorage.getItem("veterinaryServices")
+      if (servicesJson) {
+        const services = JSON.parse(servicesJson)
+        const foundService = services.find((s) => s.name === service)
+        if (foundService) {
+          serviceId = foundService.id
+          console.log(`ID de servicio recuperado de localStorage: ${serviceId}`)
+        }
+      }
+  
+      // Si aún no tenemos un ID válido, mostrar error
+      if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+        alert("Error: No se pudo determinar el servicio seleccionado. Por favor, intente nuevamente.")
+        return
+      }
+    }
+  
+    if (serviceTypeElement) serviceTypeElement.textContent = `- ${service}`
+    if (serviceInput) serviceInput.value = service
   
     if (serviceIdInput) {
       serviceIdInput.value = serviceId
-      console.log("ID de servicio establecido:", serviceId)
+      console.log("ID de servicio establecido en el formulario:", serviceId)
     } else {
       console.error("Elemento service-id-input no encontrado")
     }
@@ -132,7 +288,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const appointmentDate = document.getElementById("appointment-date")
     const timeSelect = document.getElementById("appointment-time")
   
-    if (!form) return
+    if (!form) {
+      console.error("Formulario de reserva no encontrado")
+      return
+    }
   
     // Configurar la fecha mínima como hoy
     if (appointmentDate) {
@@ -345,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
-  // Modificar la función submitReservation para incluir el token de autenticación
+  // Enviar datos de reserva a la API
   async function submitReservation(reservationData) {
     try {
       // Verificar que el ID del servicio sea válido
@@ -458,6 +617,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   }
+  
+  // Exponer funciones al ámbito global para que puedan ser llamadas desde HTML
+  window.closeModal = closeModal
+  window.openInfoModal = openInfoModal
   
   // Llamar a la función de inicialización de precios cuando se carga el documento
   document.addEventListener("DOMContentLoaded", () => {
