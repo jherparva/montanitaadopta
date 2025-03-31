@@ -1,17 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Documento cargado, inicializando...")
+    console.log("Documento cargado, inicializando servicios veterinarios...")
   
     // Cargar los servicios veterinarios inmediatamente
-    loadVeterinaryServices().then(() => {
-      // Configurar botones solo después de cargar los servicios
-      setupAllButtons()
+    loadVeterinaryServices().then((success) => {
+      if (success) {
+        console.log("Servicios cargados correctamente, configurando botones...")
+        // Configurar botones solo después de cargar los servicios
+        setupAllButtons()
+        // Configurar el formulario de reserva
+        setupReservationForm()
+      } else {
+        console.error("No se pudieron cargar los servicios veterinarios")
+      }
     })
   })
   
   // Función para cargar los servicios veterinarios desde la API
   async function loadVeterinaryServices() {
     try {
-      console.log("Cargando servicios veterinarios...")
+      console.log("Cargando servicios veterinarios desde la API...")
       const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/")
   
       if (!response.ok) {
@@ -19,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   
       const services = await response.json()
-      console.log("Servicios cargados:", services)
+      console.log("Servicios cargados desde la API:", services)
   
       if (!services || services.length === 0) {
         console.error("No se recibieron servicios de la API")
@@ -28,12 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Guardar los servicios en localStorage para uso posterior
       localStorage.setItem("veterinaryServices", JSON.stringify(services))
-      console.log("Servicios guardados en localStorage")
+      console.log(`Se guardaron ${services.length} servicios en localStorage`)
   
-      // Mapear servicios por nombre para facilitar su búsqueda
+      // Crear un mapa de servicios por nombre para facilitar su búsqueda
       const serviceMap = {}
       services.forEach((service) => {
-        serviceMap[service.name.toLowerCase()] = service
+        if (service && service.name) {
+          serviceMap[service.name.toLowerCase()] = service
+        }
       })
       localStorage.setItem("veterinaryServicesMap", JSON.stringify(serviceMap))
   
@@ -53,17 +62,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
   
-    const services = JSON.parse(servicesJson)
-    console.log(`Configurando botones con ${services.length} servicios disponibles`)
+    try {
+      const services = JSON.parse(servicesJson)
+      console.log(`Configurando botones con ${services.length} servicios disponibles`)
   
-    // Configurar botones de reserva
-    setupReservationButtons(services)
+      // Configurar botones de reserva
+      setupReservationButtons(services)
   
-    // Configurar botones de más información
-    setupInfoButtons(services)
+      // Configurar botones de más información
+      setupInfoButtons(services)
   
-    // Actualizar precios
-    updatePrices(services)
+      // Actualizar precios
+      updatePrices(services)
+    } catch (error) {
+      console.error("Error al configurar botones:", error)
+    }
   }
   
   // Formatear precio en formato de pesos colombianos
@@ -84,43 +97,49 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (priceElements.length === 0) {
       console.warn("No se encontraron elementos con clase 'service-price'")
+      return
     }
   
-    // Intentar diferentes estrategias para actualizar los precios
+    // Mapear servicios por nombre para facilitar la búsqueda
+    const serviceByName = {}
+    services.forEach((service) => {
+      if (service && service.name) {
+        serviceByName[service.name.toLowerCase()] = service
+      }
+    })
   
-    // Estrategia 1: Si hay tantos elementos de precio como servicios, asignar en orden
-    if (priceElements.length === services.length) {
-      priceElements.forEach((element, index) => {
-        if (index < services.length) {
-          element.textContent = formatColombiaPesos(services[index].price)
-          console.log(`Precio actualizado (estrategia 1): ${formatColombiaPesos(services[index].price)}`)
-        }
-      })
-    }
-    // Estrategia 2: Buscar elementos cercanos que contengan el nombre del servicio
-    else {
-      priceElements.forEach((element) => {
+    // Actualizar cada elemento de precio
+    priceElements.forEach((element) => {
+      try {
         // Buscar el contenedor padre (puede ser un div, card, etc.)
-        const container = element.closest(".service-card") || element.parentElement
-        if (!container) return
-  
-        // Buscar texto que pueda contener el nombre del servicio
-        const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
-  
-        for (const textEl of textElements) {
-          const serviceName = textEl.textContent.trim().toLowerCase()
-  
-          // Buscar un servicio que coincida con este nombre
-          for (const service of services) {
-            if (service.name.toLowerCase().includes(serviceName) || serviceName.includes(service.name.toLowerCase())) {
-              element.textContent = formatColombiaPesos(service.price)
-              console.log(`Precio actualizado (estrategia 2) para ${service.name}: ${formatColombiaPesos(service.price)}`)
-              break
-            }
-          }
+        const container = element.closest(".service-card")
+        if (!container) {
+          console.warn("No se encontró contenedor para un elemento de precio")
+          return
         }
-      })
-    }
+  
+        // Buscar el nombre del servicio en el contenedor
+        const titleElement = container.querySelector("h3")
+        if (!titleElement) {
+          console.warn("No se encontró título para un servicio")
+          return
+        }
+  
+        const serviceName = titleElement.textContent.trim()
+        const serviceNameLower = serviceName.toLowerCase()
+  
+        // Buscar el servicio por nombre
+        const service = serviceByName[serviceNameLower]
+        if (service) {
+          element.textContent = formatColombiaPesos(service.price)
+          console.log(`Precio actualizado para ${serviceName}: ${formatColombiaPesos(service.price)}`)
+        } else {
+          console.warn(`No se encontró servicio con nombre: ${serviceName}`)
+        }
+      } catch (error) {
+        console.error("Error al actualizar precio:", error)
+      }
+    })
   
     // Actualizar también precios estáticos
     const staticPrices = document.querySelectorAll(".static-price")
@@ -139,80 +158,63 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (reserveButtons.length === 0) {
       console.warn("No se encontraron botones con clase 'reserve-btn'")
+      return
     }
   
-    reserveButtons.forEach((button, index) => {
-      // Intentar determinar qué servicio corresponde a este botón
-      let serviceId = null
-      let serviceName = null
-  
-      // Estrategia 1: Usar atributos data existentes
-      serviceId = button.getAttribute("data-service-id")
-      serviceName = button.getAttribute("data-service")
-  
-      // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
-      if ((!serviceId || serviceId === "null") && serviceName) {
-        const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
-        if (service) {
-          serviceId = service.id
-          console.log(`ID de servicio encontrado por nombre: ${serviceId}`)
-        }
+    // Mapear servicios por nombre para facilitar la búsqueda
+    const serviceByName = {}
+    services.forEach((service) => {
+      if (service && service.name) {
+        serviceByName[service.name.toLowerCase()] = service
       }
+    })
   
-      // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
-      if (!serviceId || serviceId === "null") {
-        // Buscar el contenedor padre (puede ser un div, card, etc.)
-        const container = button.closest(".service-card") || button.parentElement
-        if (container) {
-          // Buscar texto que pueda contener el nombre del servicio
-          const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+    reserveButtons.forEach((button) => {
+      try {
+        // Obtener el nombre del servicio del atributo data-service
+        let serviceName = button.getAttribute("data-service")
+        let serviceId = button.getAttribute("data-service-id")
   
-          for (const textEl of textElements) {
-            const text = textEl.textContent.trim()
-  
-            // Buscar un servicio que coincida con este nombre
-            const service = services.find(
-              (s) =>
-                s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
-            )
-  
-            if (service) {
-              serviceId = service.id
-              serviceName = service.name
-              console.log(`Servicio encontrado por texto cercano: ${serviceName} (ID: ${serviceId})`)
-              break
+        // Si no hay nombre de servicio, intentar obtenerlo del contenedor
+        if (!serviceName) {
+          const container = button.closest(".service-card")
+          if (container) {
+            const titleElement = container.querySelector("h3")
+            if (titleElement) {
+              serviceName = titleElement.textContent.trim()
             }
           }
         }
-      }
   
-      // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
-      if ((!serviceId || serviceId === "null") && reserveButtons.length === services.length) {
-        if (index < services.length) {
-          serviceId = services[index].id
-          serviceName = services[index].name
-          console.log(`Servicio asignado por posición: ${serviceName} (ID: ${serviceId})`)
+        if (!serviceName) {
+          console.warn("No se pudo determinar el nombre del servicio para un botón de reserva")
+          return
         }
-      }
   
-      // Actualizar los atributos data del botón
-      if (serviceId && serviceId !== "null") {
-        button.setAttribute("data-service-id", serviceId)
-        if (serviceName) {
-          button.setAttribute("data-service", serviceName)
+        // Buscar el servicio por nombre
+        const serviceNameLower = serviceName.toLowerCase()
+        const service = serviceByName[serviceNameLower]
+  
+        if (service) {
+          // Actualizar los atributos data del botón
+          serviceId = service.id
+          button.setAttribute("data-service-id", serviceId)
+          button.setAttribute("data-service", service.name)
+          console.log(`Botón de reserva configurado: ID=${serviceId}, Nombre=${service.name}`)
+        } else {
+          console.warn(`No se encontró servicio con nombre: ${serviceName}`)
         }
-        console.log(`Botón de reserva configurado: ID=${serviceId}, Nombre=${serviceName}`)
-      } else {
-        console.warn(`No se pudo determinar el servicio para un botón de reserva`)
-      }
   
-      // Añadir evento click
-      button.addEventListener("click", function () {
-        const service = this.getAttribute("data-service")
-        const serviceId = this.getAttribute("data-service-id")
-        console.log(`Botón de reserva clickeado: servicio=${service}, id=${serviceId}`)
-        openReservationModal(service, serviceId)
-      })
+        // Añadir evento click
+        button.addEventListener("click", function () {
+          const service = this.getAttribute("data-service")
+          const serviceId = this.getAttribute("data-service-id")
+          console.log(`Botón de reserva clickeado: servicio=${service}, id=${serviceId}`)
+          openReservationModal(service, serviceId)
+        })
+      } catch (error) {
+        console.error("Error al configurar botón de reserva:", error)
+      }
     })
   }
   
@@ -223,76 +225,62 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (infoButtons.length === 0) {
       console.warn("No se encontraron botones con clase 'info-btn'")
+      return
     }
   
-    infoButtons.forEach((button, index) => {
-      // Intentar determinar qué servicio corresponde a este botón (similar a setupReservationButtons)
-      let serviceId = null
-      let serviceName = null
-  
-      // Estrategia 1: Usar atributos data existentes
-      serviceId = button.getAttribute("data-service-id")
-      serviceName = button.getAttribute("data-service")
-  
-      // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
-      if ((!serviceId || serviceId === "null") && serviceName) {
-        const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
-        if (service) {
-          serviceId = service.id
-        }
+    // Mapear servicios por nombre para facilitar la búsqueda
+    const serviceByName = {}
+    services.forEach((service) => {
+      if (service && service.name) {
+        serviceByName[service.name.toLowerCase()] = service
       }
+    })
   
-      // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
-      if (!serviceId || serviceId === "null") {
-        // Buscar el contenedor padre (puede ser un div, card, etc.)
-        const container = button.closest(".service-card") || button.parentElement
-        if (container) {
-          // Buscar texto que pueda contener el nombre del servicio
-          const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+    infoButtons.forEach((button) => {
+      try {
+        // Obtener el nombre del servicio del contenedor
+        let serviceName = button.getAttribute("data-service")
+        let serviceId = button.getAttribute("data-service-id")
   
-          for (const textEl of textElements) {
-            const text = textEl.textContent.trim()
-  
-            // Buscar un servicio que coincida con este nombre
-            const service = services.find(
-              (s) =>
-                s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
-            )
-  
-            if (service) {
-              serviceId = service.id
-              serviceName = service.name
-              break
+        // Si no hay nombre de servicio, intentar obtenerlo del contenedor
+        if (!serviceName) {
+          const container = button.closest(".service-card")
+          if (container) {
+            const titleElement = container.querySelector("h3")
+            if (titleElement) {
+              serviceName = titleElement.textContent.trim()
             }
           }
         }
-      }
   
-      // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
-      if ((!serviceId || serviceId === "null") && infoButtons.length === services.length) {
-        if (index < services.length) {
-          serviceId = services[index].id
-          serviceName = services[index].name
+        if (!serviceName) {
+          console.warn("No se pudo determinar el nombre del servicio para un botón de información")
+          return
         }
-      }
   
-      // Actualizar los atributos data del botón
-      if (serviceId && serviceId !== "null") {
-        button.setAttribute("data-service-id", serviceId)
-        if (serviceName) {
-          button.setAttribute("data-service", serviceName)
+        // Buscar el servicio por nombre
+        const serviceNameLower = serviceName.toLowerCase()
+        const service = serviceByName[serviceNameLower]
+  
+        if (service) {
+          // Actualizar los atributos data del botón
+          serviceId = service.id
+          button.setAttribute("data-service-id", serviceId)
+          button.setAttribute("data-service", service.name)
+          console.log(`Botón de información configurado: ID=${serviceId}, Nombre=${service.name}`)
+        } else {
+          console.warn(`No se encontró servicio con nombre: ${serviceName}`)
         }
-        console.log(`Botón de información configurado: ID=${serviceId}, Nombre=${serviceName}`)
-      } else {
-        console.warn(`No se pudo determinar el servicio para un botón de información`)
-      }
   
-      // Añadir evento click
-      button.addEventListener("click", function () {
-        const serviceId = this.getAttribute("data-service-id")
-        console.log(`Botón de información clickeado: id=${serviceId}`)
-        openInfoModal(serviceId)
-      })
+        // Añadir evento click
+        button.addEventListener("click", function () {
+          const serviceId = this.getAttribute("data-service-id")
+          console.log(`Botón de información clickeado: id=${serviceId}`)
+          openInfoModal(serviceId)
+        })
+      } catch (error) {
+        console.error("Error al configurar botón de información:", error)
+      }
     })
   }
   
@@ -300,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function openInfoModal(serviceId) {
     console.log(`Intentando abrir modal de información para servicio ID=${serviceId}`)
   
-    // Si no hay ID de servicio, intentar recuperarlo
+    // Si no hay ID de servicio, mostrar error
     if (!serviceId || serviceId === "null" || serviceId === "undefined") {
       console.error("ID de servicio inválido para modal de información:", serviceId)
       alert("Error: No se pudo determinar el servicio seleccionado.")
@@ -311,6 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const servicesJson = localStorage.getItem("veterinaryServices")
     if (!servicesJson) {
       console.error("No se encontraron servicios en localStorage")
+      // Intentar cargar los servicios nuevamente
       loadVeterinaryServices().then((success) => {
         if (success) {
           // Intentar nuevamente después de cargar los servicios
@@ -322,36 +311,41 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
   
-    const services = JSON.parse(servicesJson)
-    const service = services.find((s) => s.id == serviceId)
+    try {
+      const services = JSON.parse(servicesJson)
+      const service = services.find((s) => s.id == serviceId)
   
-    if (!service) {
-      console.error(`No se encontró el servicio con ID ${serviceId}`)
-      alert("Error: Servicio no encontrado.")
-      return
+      if (!service) {
+        console.error(`No se encontró el servicio con ID ${serviceId}`)
+        alert("Error: Servicio no encontrado.")
+        return
+      }
+  
+      // Obtener el modal de información o crearlo si no existe
+      let modal = document.getElementById("infoModal")
+      if (!modal) {
+        console.log("Modal de información no encontrado, creándolo dinámicamente")
+        createInfoModal()
+        modal = document.getElementById("infoModal")
+      }
+  
+      // Actualizar contenido del modal
+      const modalTitle = modal.querySelector(".modal-title")
+      const modalDescription = modal.querySelector(".modal-description")
+      const modalPrice = modal.querySelector(".modal-price")
+      const modalDuration = modal.querySelector(".modal-duration")
+  
+      if (modalTitle) modalTitle.textContent = service.name
+      if (modalDescription) modalDescription.textContent = service.description || "No hay descripción disponible"
+      if (modalPrice) modalPrice.textContent = `Precio: ${formatColombiaPesos(service.price)}`
+      if (modalDuration) modalDuration.textContent = `Duración: ${service.duration_minutes} minutos`
+  
+      // Mostrar el modal
+      modal.style.display = "block"
+    } catch (error) {
+      console.error("Error al abrir modal de información:", error)
+      alert("Error al mostrar la información del servicio.")
     }
-  
-    // Obtener el modal de información
-    let modal = document.getElementById("infoModal")
-    if (!modal) {
-      console.log("Modal de información no encontrado, creándolo dinámicamente")
-      createInfoModal()
-      modal = document.getElementById("infoModal")
-    }
-  
-    // Actualizar contenido del modal
-    const modalTitle = modal.querySelector(".modal-title")
-    const modalDescription = modal.querySelector(".modal-description")
-    const modalPrice = modal.querySelector(".modal-price")
-    const modalDuration = modal.querySelector(".modal-duration")
-  
-    if (modalTitle) modalTitle.textContent = service.name
-    if (modalDescription) modalDescription.textContent = service.description || "No hay descripción disponible"
-    if (modalPrice) modalPrice.textContent = `Precio: ${formatColombiaPesos(service.price)}`
-    if (modalDuration) modalDuration.textContent = `Duración: ${service.duration_minutes} minutos`
-  
-    // Mostrar el modal
-    modal.style.display = "block"
   }
   
   // Crear modal de información dinámicamente si no existe
@@ -431,24 +425,28 @@ document.addEventListener("DOMContentLoaded", () => {
       // Intentar obtener el ID del servicio desde localStorage
       const servicesJson = localStorage.getItem("veterinaryServices")
       if (servicesJson) {
-        const services = JSON.parse(servicesJson)
+        try {
+          const services = JSON.parse(servicesJson)
   
-        // Buscar por nombre exacto
-        let foundService = services.find((s) => s.name === service)
+          // Buscar por nombre exacto
+          let foundService = services.find((s) => s.name === service)
   
-        // Si no se encuentra, buscar por nombre parcial
-        if (!foundService && service) {
-          foundService = services.find(
-            (s) =>
-              s.name.toLowerCase().includes(service.toLowerCase()) ||
-              service.toLowerCase().includes(s.name.toLowerCase()),
-          )
-        }
+          // Si no se encuentra, buscar por nombre parcial
+          if (!foundService && service) {
+            foundService = services.find(
+              (s) =>
+                s.name.toLowerCase().includes(service.toLowerCase()) ||
+                service.toLowerCase().includes(s.name.toLowerCase()),
+            )
+          }
   
-        if (foundService) {
-          serviceId = foundService.id
-          service = foundService.name
-          console.log(`ID de servicio recuperado de localStorage: ${serviceId}`)
+          if (foundService) {
+            serviceId = foundService.id
+            service = foundService.name
+            console.log(`ID de servicio recuperado de localStorage: ${serviceId}`)
+          }
+        } catch (error) {
+          console.error("Error al buscar servicio en localStorage:", error)
         }
       }
   
@@ -459,6 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   
+    // Actualizar elementos del modal
     if (serviceTypeElement) serviceTypeElement.textContent = `- ${service}`
     if (serviceInput) serviceInput.value = service
   
@@ -495,6 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timeSelect.innerHTML = '<option value="">Seleccionar...</option>'
     }
   
+    // Mostrar el modal
     modal.style.display = "block"
   }
   
@@ -518,7 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupReservationForm() {
     const form = document.getElementById("reservation-form")
     const appointmentDate = document.getElementById("appointment-date")
-    const timeSelect = document.getElementById("appointment-time")
   
     if (!form) {
       console.error("Formulario de reserva no encontrado")
@@ -843,8 +842,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Inicializar cuando se carga el documento
   document.addEventListener("DOMContentLoaded", () => {
-    // Configurar el formulario de reserva
-    setupReservationForm()
+    // Ya se llama a loadVeterinaryServices() en el evento DOMContentLoaded al inicio del archivo
+    // Así que no necesitamos llamarlo de nuevo aquí
   })
   
   
