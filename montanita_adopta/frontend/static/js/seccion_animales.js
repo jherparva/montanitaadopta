@@ -243,14 +243,23 @@ function renderAnimals(animals) {
 
     // Formatear la URL de la imagen correctamente
     let imagenUrl = animal.imagen || "/static/img/placeholder_pet.jpg"
+
+    // Asegurarse de que la URL sea absoluta
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+      // Extraer el nombre del archivo
+      const pathParts = imagenUrl.split("/")
+      const fileName = pathParts[pathParts.length - 1]
+
+      // Construir la URL completa
+      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
     }
+
+    console.log("URL de imagen en renderAnimals:", imagenUrl)
 
     html += `
             <div class="animal-card" data-id="${animal.id}">
                 <div class="animal-image">
-                    <img src="${imagenUrl}" alt="${animal.nombre}">
+                    <img src="${imagenUrl}" alt="${animal.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
                     <button class="favorite-toggle ${isFavorite ? "active" : ""}" data-id="${animal.id}">
                         <i class="fas fa-heart"></i>
                     </button>
@@ -389,13 +398,26 @@ async function openAnimalModal(animalId) {
 
     // Formatear la URL de la imagen correctamente
     let imagenUrl = animalDetails.imagen || "/static/img/placeholder_pet.jpg"
+
+    // Asegurarse de que la URL sea absoluta
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+      // Extraer el nombre del archivo
+      const pathParts = imagenUrl.split("/")
+      const fileName = pathParts[pathParts.length - 1]
+
+      // Construir la URL completa
+      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
     }
+
+    console.log("URL de imagen en modal:", imagenUrl)
 
     // Actualizar el contenido del modal con los detalles del animal
     modalName.textContent = animalDetails.nombre
     modalImage.src = imagenUrl
+    modalImage.onerror = function () {
+      this.src = "/static/img/placeholder_pet.jpg"
+      this.onerror = null
+    }
     modalSpecies.textContent = animalDetails.especie === "dog" ? "Perro" : "Gato"
     modalAge.textContent = animalDetails.edad || "Desconocida"
     modalSize.textContent = animalDetails.tamano || "Mediano"

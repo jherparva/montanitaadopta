@@ -83,13 +83,22 @@ function updateDogCarousel() {
 
     // Usar la URL base correcta para las imágenes
     let imagenUrl = dog.imagen || "/static/img/placeholder_pet.jpg"
+
+    // Asegurarse de que la URL sea absoluta
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+      // Extraer el nombre del archivo
+      const pathParts = imagenUrl.split("/")
+      const fileName = pathParts[pathParts.length - 1]
+
+      // Construir la URL completa
+      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
     }
+
+    console.log("URL de imagen en carrusel de perros:", imagenUrl)
 
     item.innerHTML = `
             <div class="animal">
-                <img src="${imagenUrl}" alt="${dog.nombre}">
+                <img src="${imagenUrl}" alt="${dog.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
                 <h4>${dog.nombre}</h4>
                 <p>${dog.descripcion ? dog.descripcion.substring(0, 30) + "..." : "Un perro esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${dog.id}" type="button">
@@ -126,13 +135,22 @@ function updateCatCarousel() {
 
     // Usar la URL base correcta para las imágenes
     let imagenUrl = cat.imagen || "/static/img/placeholder_pet.jpg"
+
+    // Asegurarse de que la URL sea absoluta
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      imagenUrl = `https://webmontanitaadopta.onrender.com${imagenUrl.startsWith("/") ? "" : "/"}${imagenUrl}`
+      // Extraer el nombre del archivo
+      const pathParts = imagenUrl.split("/")
+      const fileName = pathParts[pathParts.length - 1]
+
+      // Construir la URL completa
+      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
     }
+
+    console.log("URL de imagen en carrusel de gatos:", imagenUrl)
 
     item.innerHTML = `
             <div class="animal">
-                <img src="${imagenUrl}" alt="${cat.nombre}">
+                <img src="${imagenUrl}" alt="${cat.nombre}" onerror="this.src='/static/img/placeholder_pet.jpg'; this.onerror=null;">
                 <h4>${cat.nombre}</h4>
                 <p>${cat.descripcion ? cat.descripcion.substring(0, 30) + "..." : "Un gato esperando un hogar..."}</p>
                 <button class="adoptarBtn" data-mascota-id="${cat.id}" type="button">

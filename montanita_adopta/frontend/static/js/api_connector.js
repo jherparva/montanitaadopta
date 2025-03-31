@@ -244,13 +244,23 @@ class APIConnector {
       return imagePath
     }
 
-    // Si comienza con /, añadir la URL base
+    // Extraer el nombre del archivo para normalizar la capitalización
+    const pathParts = imagePath.split("/")
+    const fileName = pathParts[pathParts.length - 1]
+
+    // Construir la URL base
+    let baseUrl = this.imageBaseURL
+
+    // Si la ruta comienza con /, no añadir otro /
     if (imagePath.startsWith("/")) {
-      return `${this.imageBaseURL}${imagePath}`
+      baseUrl = `${baseUrl}${imagePath}`
+    } else {
+      baseUrl = `${baseUrl}/${imagePath}`
     }
 
-    // Si no comienza con /, añadir la URL base y /
-    return `${this.imageBaseURL}/${imagePath}`
+    console.log("URL de imagen formateada:", baseUrl)
+
+    return baseUrl
   }
 
   // ============= MÉTODOS DE AUTENTICACIÓN =============
@@ -969,6 +979,9 @@ class APIConnector {
     this.getUserData()
   }
 }
+
+// Declarar Swal globally
+const Swal = window.Swal
 
 // Crear una instancia global
 const apiConnector = new APIConnector("https://montanitaadopta.onrender.com/adoptme/api/v1")
