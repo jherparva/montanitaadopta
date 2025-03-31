@@ -1,17 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Documento cargado, inicializando...")
   
-    // Cargar los servicios veterinarios
-    loadVeterinaryServices()
-  
-    // Configurar botones de reserva
-    setupReservationButtons()
-  
-    // Configurar el formulario de reserva
-    setupReservationForm()
-  
-    // Configurar botones de más información
-    setupInfoButtons()
+    // Cargar los servicios veterinarios inmediatamente
+    loadVeterinaryServices().then(() => {
+      // Configurar botones solo después de cargar los servicios
+      setupAllButtons()
+    })
   })
   
   // Función para cargar los servicios veterinarios desde la API
@@ -21,56 +15,60 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/")
   
       if (!response.ok) {
-        throw new Error("Error al cargar los servicios veterinarios")
+        throw new Error(`Error al cargar los servicios veterinarios: ${response.status} ${response.statusText}`)
       }
   
       const services = await response.json()
       console.log("Servicios cargados:", services)
   
-      // Actualizar los servicios en la página
-      if (services && services.length > 0) {
-        // Guardar los servicios en localStorage para uso posterior
-        localStorage.setItem("veterinaryServices", JSON.stringify(services))
-  
-        const serviceCards = document.querySelectorAll(".service-card")
-        console.log(`Encontradas ${serviceCards.length} tarjetas de servicio`)
-  
-        services.forEach((service, index) => {
-          // Si hay tarjetas disponibles, actualizar su información
-          if (index < serviceCards.length) {
-            const card = serviceCards[index]
-  
-            // Actualizar botón de reserva
-            const reserveBtn = card.querySelector(".reserve-btn")
-            if (reserveBtn) {
-              reserveBtn.setAttribute("data-service-id", service.id)
-              reserveBtn.setAttribute("data-service", service.name)
-              console.log(`Botón de reserva actualizado: ID=${service.id}, Nombre=${service.name}`)
-            }
-  
-            // Actualizar botón de información
-            const infoBtn = card.querySelector(".info-btn")
-            if (infoBtn) {
-              infoBtn.setAttribute("data-service-id", service.id)
-              infoBtn.setAttribute("data-service", service.name)
-            }
-  
-            // Actualizar precio
-            const priceElement = card.querySelector(".service-price")
-            if (priceElement) {
-              priceElement.textContent = formatColombiaPesos(service.price)
-              console.log(`Precio actualizado: ${formatColombiaPesos(service.price)}`)
-            }
-          }
-        })
+      if (!services || services.length === 0) {
+        console.error("No se recibieron servicios de la API")
+        return false
       }
+  
+      // Guardar los servicios en localStorage para uso posterior
+      localStorage.setItem("veterinaryServices", JSON.stringify(services))
+      console.log("Servicios guardados en localStorage")
+  
+      // Mapear servicios por nombre para facilitar su búsqueda
+      const serviceMap = {}
+      services.forEach((service) => {
+        serviceMap[service.name.toLowerCase()] = service
+      })
+      localStorage.setItem("veterinaryServicesMap", JSON.stringify(serviceMap))
+  
+      return true
     } catch (error) {
       console.error("Error al cargar servicios:", error)
+      return false
     }
+  }
+  
+  // Configurar todos los botones después de cargar los servicios
+  function setupAllButtons() {
+    // Intentar obtener los servicios del localStorage
+    const servicesJson = localStorage.getItem("veterinaryServices")
+    if (!servicesJson) {
+      console.error("No se encontraron servicios en localStorage para configurar botones")
+      return
+    }
+  
+    const services = JSON.parse(servicesJson)
+    console.log(`Configurando botones con ${services.length} servicios disponibles`)
+  
+    // Configurar botones de reserva
+    setupReservationButtons(services)
+  
+    // Configurar botones de más información
+    setupInfoButtons(services)
+  
+    // Actualizar precios
+    updatePrices(services)
   }
   
   // Formatear precio en formato de pesos colombianos
   function formatColombiaPesos(price) {
+    if (price === undefined || price === null) return "$ 0"
     // Formatear número sin decimales y con punto como separador de miles
     const formattedPrice = Math.round(price)
       .toString()
@@ -78,12 +76,137 @@ document.addEventListener("DOMContentLoaded", () => {
     return `$ ${formattedPrice}`
   }
   
+  // Actualizar precios en la página
+  function updatePrices(services) {
+    // Actualizar precios en elementos con clase service-price
+    const priceElements = document.querySelectorAll(".service-price")
+    console.log(`Encontrados ${priceElements.length} elementos de precio`)
+  
+    if (priceElements.length === 0) {
+      console.warn("No se encontraron elementos con clase 'service-price'")
+    }
+  
+    // Intentar diferentes estrategias para actualizar los precios
+  
+    // Estrategia 1: Si hay tantos elementos de precio como servicios, asignar en orden
+    if (priceElements.length === services.length) {
+      priceElements.forEach((element, index) => {
+        if (index < services.length) {
+          element.textContent = formatColombiaPesos(services[index].price)
+          console.log(`Precio actualizado (estrategia 1): ${formatColombiaPesos(services[index].price)}`)
+        }
+      })
+    }
+    // Estrategia 2: Buscar elementos cercanos que contengan el nombre del servicio
+    else {
+      priceElements.forEach((element) => {
+        // Buscar el contenedor padre (puede ser un div, card, etc.)
+        const container = element.closest(".service-card") || element.parentElement
+        if (!container) return
+  
+        // Buscar texto que pueda contener el nombre del servicio
+        const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+  
+        for (const textEl of textElements) {
+          const serviceName = textEl.textContent.trim().toLowerCase()
+  
+          // Buscar un servicio que coincida con este nombre
+          for (const service of services) {
+            if (service.name.toLowerCase().includes(serviceName) || serviceName.includes(service.name.toLowerCase())) {
+              element.textContent = formatColombiaPesos(service.price)
+              console.log(`Precio actualizado (estrategia 2) para ${service.name}: ${formatColombiaPesos(service.price)}`)
+              break
+            }
+          }
+        }
+      })
+    }
+  
+    // Actualizar también precios estáticos
+    const staticPrices = document.querySelectorAll(".static-price")
+    staticPrices.forEach((element) => {
+      const originalValue = element.getAttribute("data-price")
+      if (originalValue) {
+        element.textContent = formatColombiaPesos(Number.parseFloat(originalValue))
+      }
+    })
+  }
+  
   // Configurar los botones de reserva
-  function setupReservationButtons() {
+  function setupReservationButtons(services) {
     const reserveButtons = document.querySelectorAll(".reserve-btn")
     console.log(`Configurando ${reserveButtons.length} botones de reserva`)
   
-    reserveButtons.forEach((button) => {
+    if (reserveButtons.length === 0) {
+      console.warn("No se encontraron botones con clase 'reserve-btn'")
+    }
+  
+    reserveButtons.forEach((button, index) => {
+      // Intentar determinar qué servicio corresponde a este botón
+      let serviceId = null
+      let serviceName = null
+  
+      // Estrategia 1: Usar atributos data existentes
+      serviceId = button.getAttribute("data-service-id")
+      serviceName = button.getAttribute("data-service")
+  
+      // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
+      if ((!serviceId || serviceId === "null") && serviceName) {
+        const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
+        if (service) {
+          serviceId = service.id
+          console.log(`ID de servicio encontrado por nombre: ${serviceId}`)
+        }
+      }
+  
+      // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
+      if (!serviceId || serviceId === "null") {
+        // Buscar el contenedor padre (puede ser un div, card, etc.)
+        const container = button.closest(".service-card") || button.parentElement
+        if (container) {
+          // Buscar texto que pueda contener el nombre del servicio
+          const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+  
+          for (const textEl of textElements) {
+            const text = textEl.textContent.trim()
+  
+            // Buscar un servicio que coincida con este nombre
+            const service = services.find(
+              (s) =>
+                s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
+            )
+  
+            if (service) {
+              serviceId = service.id
+              serviceName = service.name
+              console.log(`Servicio encontrado por texto cercano: ${serviceName} (ID: ${serviceId})`)
+              break
+            }
+          }
+        }
+      }
+  
+      // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
+      if ((!serviceId || serviceId === "null") && reserveButtons.length === services.length) {
+        if (index < services.length) {
+          serviceId = services[index].id
+          serviceName = services[index].name
+          console.log(`Servicio asignado por posición: ${serviceName} (ID: ${serviceId})`)
+        }
+      }
+  
+      // Actualizar los atributos data del botón
+      if (serviceId && serviceId !== "null") {
+        button.setAttribute("data-service-id", serviceId)
+        if (serviceName) {
+          button.setAttribute("data-service", serviceName)
+        }
+        console.log(`Botón de reserva configurado: ID=${serviceId}, Nombre=${serviceName}`)
+      } else {
+        console.warn(`No se pudo determinar el servicio para un botón de reserva`)
+      }
+  
+      // Añadir evento click
       button.addEventListener("click", function () {
         const service = this.getAttribute("data-service")
         const serviceId = this.getAttribute("data-service-id")
@@ -94,11 +217,77 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   // Configurar los botones de más información
-  function setupInfoButtons() {
+  function setupInfoButtons(services) {
     const infoButtons = document.querySelectorAll(".info-btn")
     console.log(`Configurando ${infoButtons.length} botones de información`)
   
-    infoButtons.forEach((button) => {
+    if (infoButtons.length === 0) {
+      console.warn("No se encontraron botones con clase 'info-btn'")
+    }
+  
+    infoButtons.forEach((button, index) => {
+      // Intentar determinar qué servicio corresponde a este botón (similar a setupReservationButtons)
+      let serviceId = null
+      let serviceName = null
+  
+      // Estrategia 1: Usar atributos data existentes
+      serviceId = button.getAttribute("data-service-id")
+      serviceName = button.getAttribute("data-service")
+  
+      // Estrategia 2: Si no hay ID pero hay nombre, buscar el ID por nombre
+      if ((!serviceId || serviceId === "null") && serviceName) {
+        const service = services.find((s) => s.name.toLowerCase() === serviceName.toLowerCase())
+        if (service) {
+          serviceId = service.id
+        }
+      }
+  
+      // Estrategia 3: Buscar texto cercano que pueda ser el nombre del servicio
+      if (!serviceId || serviceId === "null") {
+        // Buscar el contenedor padre (puede ser un div, card, etc.)
+        const container = button.closest(".service-card") || button.parentElement
+        if (container) {
+          // Buscar texto que pueda contener el nombre del servicio
+          const textElements = container.querySelectorAll("h2, h3, h4, .service-name, .title")
+  
+          for (const textEl of textElements) {
+            const text = textEl.textContent.trim()
+  
+            // Buscar un servicio que coincida con este nombre
+            const service = services.find(
+              (s) =>
+                s.name.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(s.name.toLowerCase()),
+            )
+  
+            if (service) {
+              serviceId = service.id
+              serviceName = service.name
+              break
+            }
+          }
+        }
+      }
+  
+      // Estrategia 4: Si hay tantos botones como servicios, asignar en orden
+      if ((!serviceId || serviceId === "null") && infoButtons.length === services.length) {
+        if (index < services.length) {
+          serviceId = services[index].id
+          serviceName = services[index].name
+        }
+      }
+  
+      // Actualizar los atributos data del botón
+      if (serviceId && serviceId !== "null") {
+        button.setAttribute("data-service-id", serviceId)
+        if (serviceName) {
+          button.setAttribute("data-service", serviceName)
+        }
+        console.log(`Botón de información configurado: ID=${serviceId}, Nombre=${serviceName}`)
+      } else {
+        console.warn(`No se pudo determinar el servicio para un botón de información`)
+      }
+  
+      // Añadir evento click
       button.addEventListener("click", function () {
         const serviceId = this.getAttribute("data-service-id")
         console.log(`Botón de información clickeado: id=${serviceId}`)
@@ -109,10 +298,27 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Abrir modal de información
   function openInfoModal(serviceId) {
+    console.log(`Intentando abrir modal de información para servicio ID=${serviceId}`)
+  
+    // Si no hay ID de servicio, intentar recuperarlo
+    if (!serviceId || serviceId === "null" || serviceId === "undefined") {
+      console.error("ID de servicio inválido para modal de información:", serviceId)
+      alert("Error: No se pudo determinar el servicio seleccionado.")
+      return
+    }
+  
     // Obtener los servicios del localStorage
     const servicesJson = localStorage.getItem("veterinaryServices")
     if (!servicesJson) {
       console.error("No se encontraron servicios en localStorage")
+      loadVeterinaryServices().then((success) => {
+        if (success) {
+          // Intentar nuevamente después de cargar los servicios
+          openInfoModal(serviceId)
+        } else {
+          alert("Error: No se pudieron cargar los servicios. Por favor, recargue la página.")
+        }
+      })
       return
     }
   
@@ -121,16 +327,16 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (!service) {
       console.error(`No se encontró el servicio con ID ${serviceId}`)
+      alert("Error: Servicio no encontrado.")
       return
     }
   
     // Obtener el modal de información
-    const modal = document.getElementById("infoModal")
+    let modal = document.getElementById("infoModal")
     if (!modal) {
-      console.error("Modal de información no encontrado")
-      // Si no existe el modal, lo creamos dinámicamente
+      console.log("Modal de información no encontrado, creándolo dinámicamente")
       createInfoModal()
-      return
+      modal = document.getElementById("infoModal")
     }
   
     // Actualizar contenido del modal
@@ -214,6 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (!modal) {
       console.error("Modal de reserva no encontrado")
+      alert("Error: Modal de reserva no encontrado.")
       return
     }
   
@@ -225,9 +432,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const servicesJson = localStorage.getItem("veterinaryServices")
       if (servicesJson) {
         const services = JSON.parse(servicesJson)
-        const foundService = services.find((s) => s.name === service)
+  
+        // Buscar por nombre exacto
+        let foundService = services.find((s) => s.name === service)
+  
+        // Si no se encuentra, buscar por nombre parcial
+        if (!foundService && service) {
+          foundService = services.find(
+            (s) =>
+              s.name.toLowerCase().includes(service.toLowerCase()) ||
+              service.toLowerCase().includes(s.name.toLowerCase()),
+          )
+        }
+  
         if (foundService) {
           serviceId = foundService.id
+          service = foundService.name
           console.log(`ID de servicio recuperado de localStorage: ${serviceId}`)
         }
       }
@@ -247,6 +467,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("ID de servicio establecido en el formulario:", serviceId)
     } else {
       console.error("Elemento service-id-input no encontrado")
+  
+      // Crear el input si no existe
+      const form = document.getElementById("reservation-form")
+      if (form) {
+        const hiddenInput = document.createElement("input")
+        hiddenInput.type = "hidden"
+        hiddenInput.id = "service-id-input"
+        hiddenInput.name = "serviceId"
+        hiddenInput.value = serviceId
+        form.appendChild(hiddenInput)
+        console.log("Creado input oculto para service-id-input con valor:", serviceId)
+      }
     }
   
     // Restablecer fecha mínima
@@ -604,27 +836,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
-  // Inicializar la visualización de precios en elementos existentes en la página
-  function initializePrices() {
-    const staticPrices = document.querySelectorAll(".static-price")
-  
-    staticPrices.forEach((element) => {
-      // Obtener el valor original
-      const originalValue = element.getAttribute("data-price")
-      if (originalValue) {
-        // Formatear y mostrar
-        element.textContent = formatColombiaPesos(Number.parseFloat(originalValue))
-      }
-    })
-  }
-  
   // Exponer funciones al ámbito global para que puedan ser llamadas desde HTML
   window.closeModal = closeModal
   window.openInfoModal = openInfoModal
+  window.openReservationModal = openReservationModal
   
-  // Llamar a la función de inicialización de precios cuando se carga el documento
+  // Inicializar cuando se carga el documento
   document.addEventListener("DOMContentLoaded", () => {
-    initializePrices()
+    // Configurar el formulario de reserva
+    setupReservationForm()
   })
   
   
