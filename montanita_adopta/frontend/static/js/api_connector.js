@@ -244,23 +244,21 @@ class APIConnector {
       return imagePath
     }
 
-    // Extraer el nombre del archivo para normalizar la capitalización
-    const pathParts = imagePath.split("/")
-    const fileName = pathParts[pathParts.length - 1]
-
-    // Construir la URL base
-    let baseUrl = this.imageBaseURL
-
-    // Si la ruta comienza con /, no añadir otro /
-    if (imagePath.startsWith("/")) {
-      baseUrl = `${baseUrl}${imagePath}`
+    // Extraer solo el nombre del archivo (sin la ruta)
+    let fileName
+    if (imagePath.includes("/")) {
+      const pathParts = imagePath.split("/")
+      fileName = pathParts[pathParts.length - 1]
     } else {
-      baseUrl = `${baseUrl}/${imagePath}`
+      fileName = imagePath
     }
 
-    console.log("URL de imagen formateada:", baseUrl)
+    // Construir la URL completa con la ruta correcta
+    const imageUrl = `${this.imageBaseURL}/static/imagenes/${fileName}`
 
-    return baseUrl
+    console.log("URL de imagen formateada:", imageUrl)
+
+    return imageUrl
   }
 
   // ============= MÉTODOS DE AUTENTICACIÓN =============

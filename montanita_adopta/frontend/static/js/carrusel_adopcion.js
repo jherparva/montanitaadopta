@@ -81,17 +81,13 @@ function updateDogCarousel() {
     const item = document.createElement("div")
     item.className = `carousel-item ${index === 0 || index === 1 ? "active" : ""}`
 
-    // Usar la URL base correcta para las imágenes
+    // Usar directamente la URL de imagen proporcionada por la API
+    // La API ya incluye la ruta /static/imagenes/ en el campo imagen
     let imagenUrl = dog.imagen || "/static/img/placeholder_pet.jpg"
 
-    // Asegurarse de que la URL sea absoluta
+    // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      // Extraer el nombre del archivo
-      const pathParts = imagenUrl.split("/")
-      const fileName = pathParts[pathParts.length - 1]
-
-      // Construir la URL completa
-      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
+      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
     }
 
     console.log("URL de imagen en carrusel de perros:", imagenUrl)
@@ -133,17 +129,13 @@ function updateCatCarousel() {
     const item = document.createElement("div")
     item.className = `carousel-item ${index === 0 || index === 1 ? "active" : ""}`
 
-    // Usar la URL base correcta para las imágenes
+    // Usar directamente la URL de imagen proporcionada por la API
+    // La API ya incluye la ruta /static/imagenes/ en el campo imagen
     let imagenUrl = cat.imagen || "/static/img/placeholder_pet.jpg"
 
-    // Asegurarse de que la URL sea absoluta
+    // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      // Extraer el nombre del archivo
-      const pathParts = imagenUrl.split("/")
-      const fileName = pathParts[pathParts.length - 1]
-
-      // Construir la URL completa
-      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
+      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
     }
 
     console.log("URL de imagen en carrusel de gatos:", imagenUrl)

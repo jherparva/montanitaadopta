@@ -241,17 +241,13 @@ function renderAnimals(animals) {
   animals.forEach((animal) => {
     const isFavorite = favorites.includes(animal.id.toString())
 
-    // Formatear la URL de la imagen correctamente
+    // Usar directamente la URL de imagen proporcionada por la API
+    // La API ya incluye la ruta /static/imagenes/ en el campo imagen
     let imagenUrl = animal.imagen || "/static/img/placeholder_pet.jpg"
 
-    // Asegurarse de que la URL sea absoluta
+    // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      // Extraer el nombre del archivo
-      const pathParts = imagenUrl.split("/")
-      const fileName = pathParts[pathParts.length - 1]
-
-      // Construir la URL completa
-      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
+      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
     }
 
     console.log("URL de imagen en renderAnimals:", imagenUrl)
@@ -396,17 +392,13 @@ async function openAnimalModal(animalId) {
       throw new Error("No se encontró información del animal")
     }
 
-    // Formatear la URL de la imagen correctamente
+    // Usar directamente la URL de imagen proporcionada por la API
+    // La API ya incluye la ruta /static/imagenes/ en el campo imagen
     let imagenUrl = animalDetails.imagen || "/static/img/placeholder_pet.jpg"
 
-    // Asegurarse de que la URL sea absoluta
+    // Si no es una URL completa, añadir el dominio base
     if (imagenUrl && !imagenUrl.startsWith("http")) {
-      // Extraer el nombre del archivo
-      const pathParts = imagenUrl.split("/")
-      const fileName = pathParts[pathParts.length - 1]
-
-      // Construir la URL completa
-      imagenUrl = `https://webmontanitaadopta.onrender.com/static/imagenes/${fileName}`
+      imagenUrl = `${apiConnector.imageBaseURL}${imagenUrl}`
     }
 
     console.log("URL de imagen en modal:", imagenUrl)
@@ -420,7 +412,7 @@ async function openAnimalModal(animalId) {
     }
     modalSpecies.textContent = animalDetails.especie === "dog" ? "Perro" : "Gato"
     modalAge.textContent = animalDetails.edad || "Desconocida"
-    modalSize.textContent = animalDetails.tamano || "Mediano"
+    modalSize.textContent = animalDetails.tamaño || "Mediano"
     modalBreed.textContent = animalDetails.raza || "Mestizo"
     modalDescription.textContent = animalDetails.descripcion || "No hay información disponible"
 
