@@ -76,21 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (!modal) return
   
-    // Verificar que el ID del servicio sea válido
-    if (!serviceId || isNaN(Number.parseInt(serviceId))) {
-      console.error("ID de servicio inválido:", serviceId)
-      alert("Error: ID de servicio inválido")
-      return
-    }
-  
     serviceTypeElement.textContent = `- ${service}`
     serviceInput.value = service
   
     if (serviceIdInput) {
       serviceIdInput.value = serviceId
-      console.log("ID de servicio establecido:", serviceId)
-    } else {
-      console.error("Elemento service-id-input no encontrado")
     }
   
     // Restablecer fecha mínima
@@ -153,20 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
   
-      // Obtener el ID del servicio y verificar que sea válido
-      const serviceIdInput = document.getElementById("service-id-input")
-      const serviceId = serviceIdInput ? Number.parseInt(serviceIdInput.value) : 0
-  
-      if (!serviceId || isNaN(serviceId) || serviceId <= 0) {
-        showErrorMessage("ID de servicio inválido. Por favor, intente nuevamente.")
-        console.error("ID de servicio inválido:", serviceIdInput ? serviceIdInput.value : "No encontrado")
-        return
-      }
-  
       // Recopilar datos del formulario
       const formData = new FormData(form)
       const reservationData = {
-        service_id: serviceId,
+        service_id: Number.parseInt(document.getElementById("service-id-input")?.value || "0"),
         pet_owner: formData.get("petOwner"),
         pet_name: formData.get("petName"),
         pet_type: formData.get("petType"),
@@ -174,9 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
         appointment_time: formData.get("appointmentTime"),
         notes: formData.get("notes") || "",
       }
-  
-      // Imprimir los datos para depuración
-      console.log("Datos de reserva a enviar:", reservationData)
   
       // Enviar datos a la API
       try {
@@ -348,11 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Modificar la función submitReservation para incluir el token de autenticación
   async function submitReservation(reservationData) {
     try {
-      // Verificar que el ID del servicio sea válido
-      if (!reservationData.service_id || isNaN(reservationData.service_id) || reservationData.service_id <= 0) {
-        throw new Error("ID de servicio inválido")
-      }
-  
       // Obtener el token de autenticación del localStorage o donde lo tengas almacenado
       const token = localStorage.getItem("token") // Ajusta esto según donde almacenes tu token
   
@@ -365,9 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
         headers["Authorization"] = `Bearer ${token}`
       }
   
-      console.log("Enviando solicitud con headers:", headers)
-      console.log("Datos de reserva:", JSON.stringify(reservationData))
-  
       const response = await fetch(
         "https://montanitaadopta.onrender.com/adoptme/api/v1/veterinary_services/reservations/",
         {
@@ -377,11 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       )
   
-      // Imprimir información de la respuesta para depuración
-      console.log("Respuesta del servidor:", response.status, response.statusText)
-  
       const responseData = await response.json()
-      console.log("Datos de respuesta:", responseData)
   
       if (!response.ok) {
         throw new Error(responseData.detail || "Error al realizar la reserva")
@@ -392,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data: responseData,
       }
     } catch (error) {
-      console.error("Error en submitReservation:", error)
+      console.error("Error:", error)
       return {
         success: false,
         error: error.message,
