@@ -1,8 +1,8 @@
-// Importa el apiConnector (asumiendo que está en un archivo separado)
-import { apiConnector } from "./apiConnector.js" // Ajusta la ruta según tu estructura de archivos
+// Eliminar las líneas de importación al principio del archivo
+// import { apiConnector } from "./apiConnector.js"
+// import { verificarSesionYRedirigir } from "./auth.js"
 
-// Importa la función verificarSesionYRedirigir (asumiendo que está en un archivo separado)
-import { verificarSesionYRedirigir } from "./auth.js" // Ajusta la ruta según tu estructura de archivos
+// Usar directamente la variable global apiConnector que ya está definida en api_connector.js
 
 // Estado global
 let currentPage = 1
@@ -573,5 +573,31 @@ function showFavorites() {
     const favoriteAnimals = animalData.filter((animal) => favorites.includes(animal.id.toString()))
     renderAnimals(favoriteAnimals)
   })
+}
+
+// Declarar la función verificarSesionYRedirigir
+function verificarSesionYRedirigir(mascotaId) {
+  if (apiConnector.token) {
+    // Si ya hay un token, verificar la sesión
+    apiConnector
+      .verificarSesion()
+      .then(() => {
+        // Sesión válida, redirigir al formulario de adopción
+        window.location.href = `/formulario_adopcion?id=${mascotaId}`
+      })
+      .catch((error) => {
+        console.error("Error al verificar la sesión:", error)
+        // Limpiar el token en caso de error
+        apiConnector.clearToken()
+        // Guardar el ID de la mascota en sessionStorage para usarlo después del inicio de sesión
+        sessionStorage.setItem("animalParaAdoptar", mascotaId)
+        // Redirigir al usuario a la página de inicio de sesión
+        window.location.href = "/login"
+      })
+  } else {
+    // Si no hay token, guardar el ID de la mascota y redirigir al inicio de sesión
+    sessionStorage.setItem("animalParaAdoptar", mascotaId)
+    window.location.href = "/login"
+  }
 }
 

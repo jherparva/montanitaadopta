@@ -1,6 +1,8 @@
-// Importa las funciones necesarias desde apiConnector.js
-import { apiConnector } from "./apiConnector.js"
-import { redirigirAFormulario } from "./utils.js"
+// Eliminar las líneas de importación al principio del archivo
+// import { apiConnector } from "./apiConnector.js"
+// import { redirigirAFormulario } from "./utils.js"
+
+// Usar directamente la variable global apiConnector que ya está definida en api_connector.js
 
 // Estado global para carruseles
 let carouselDogs = [] // Perros para el carrusel
@@ -124,7 +126,7 @@ function updateDogCarousel() {
     btn.addEventListener("click", function () {
       const mascotaId = this.getAttribute("data-mascota-id")
       console.log(`🐾 Redirigiendo directamente al formulario de adopción con ID: ${mascotaId}`)
-      redirigirAFormulario(mascotaId)
+      verificarSesionYRedirigir(mascotaId)
     })
   })
 }
@@ -185,7 +187,7 @@ function updateCatCarousel() {
     btn.addEventListener("click", function () {
       const mascotaId = this.getAttribute("data-mascota-id")
       console.log(`🐾 Redirigiendo directamente al formulario de adopción con ID: ${mascotaId}`)
-      redirigirAFormulario(mascotaId)
+      verificarSesionYRedirigir(mascotaId)
     })
   })
 }
@@ -276,7 +278,7 @@ function verificarSesionYRedirigir(mascotaId) {
 
   if (estaLogueado) {
     // El usuario está logueado, redirigir al formulario de adopción
-    window.location.href = `/formulario-adopcion/${mascotaId}`
+    redirigirAFormulario(mascotaId)
   } else {
     // El usuario no está logueado, mostrar modal de login
     const loginModal = document.getElementById("loginModal")
@@ -288,5 +290,18 @@ function verificarSesionYRedirigir(mascotaId) {
       alert("Debes iniciar sesión para adoptar un animal.")
     }
   }
+}
+
+// Reemplazar la función redirigirAFormulario que estaba siendo importada
+// con una definición local
+
+// Función para redirigir al formulario de adopción
+function redirigirAFormulario(mascotaId) {
+  if (!mascotaId) {
+    console.error("🚨 No se pudo obtener el ID de la mascota.")
+    return
+  }
+  console.log(`🐾 Redirigiendo al formulario de adopción con ID: ${mascotaId}`)
+  window.location.href = `/formulario_adopcion?id=${mascotaId}`
 }
 
