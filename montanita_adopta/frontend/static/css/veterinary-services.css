@@ -2,10 +2,10 @@
 .veterinary-services-section {
     background-color: #f9f9f9;
     padding: 60px 0;
-}
-
-.veterinary-services-section h2 {
-    font-family: 'Blueberry', sans-serif;
+  }
+  
+  .veterinary-services-section h2 {
+    font-family: "Blueberry", sans-serif;
     text-align: center;
     color: #e01e1e;
     margin-bottom: 40px;
@@ -17,62 +17,62 @@
     left: 50%;
     transform: translateX(-50%);
     padding-top: 7%;
-}
-
-.veterinary-services-section h2::after {
-    content: '';
+  }
+  
+  .veterinary-services-section h2::after {
+    content: "";
     display: block;
     width: 80px;
     height: 3px;
     background-color: #e01e1e;
     margin: 10px auto 0;
     border-radius: 2px;
-}
-
-.services-grid {
+  }
+  
+  .services-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-}
-
-.service-card {
+  }
+  
+  .service-card {
     background-color: #ffffff;
     border-radius: 12px;
     padding: 25px;
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.service-card:hover {
+  }
+  
+  .service-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-}
-
-.service-icon {
+  }
+  
+  .service-icon {
     font-size: 48px;
     color: #3dd41f;
     margin-bottom: 15px;
-}
-
-.service-card h3 {
+  }
+  
+  .service-card h3 {
     color: #333;
     margin-bottom: 15px;
     font-size: 22px;
     font-weight: 600;
-}
-
-.service-card p {
+  }
+  
+  .service-card p {
     color: #666;
     margin-bottom: 15px;
     line-height: 1.5;
     font-size: 14px;
-}
-
-.service-btn {
+  }
+  
+  .service-btn {
     background-color: #0066cc;
     color: #fff;
     border: none;
@@ -84,328 +84,269 @@
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 102, 204, 0.2);
     margin: 0 5px;
-}
-
-.service-btn i {
+  }
+  
+  .service-btn i {
     margin-right: 8px;
-}
-
-.service-btn:hover {
+  }
+  
+  .service-btn:hover {
     background-color: #1db518;
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 102, 204, 0.3);
-}
-
-.service-btn:active {
+  }
+  
+  .service-btn:active {
     transform: translateY(0);
-}
-
-.info-btn {
+  }
+  
+  .info-btn {
     background-color: #0066cc;
-}
-
-.reserve-btn {
+  }
+  
+  .reserve-btn {
     background-color: #0066cc;
     box-shadow: 0 4px 8px rgba(224, 30, 30, 0.2);
-}
-
-.reserve-btn:hover {
+  }
+  
+  .reserve-btn:hover {
     background-color: #1db518;
     box-shadow: 0 6px 12px rgba(224, 30, 30, 0.3);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
     .services-grid {
-        grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, 1fr);
     }
-    
+  
     .veterinary-services-section h2 {
-        font-size: 40px;
+      font-size: 40px;
     }
-}
-
-@media (max-width: 600px) {
+  }
+  
+  @media (max-width: 600px) {
     .services-grid {
-        grid-template-columns: 1fr;
+      grid-template-columns: 1fr;
     }
-    
+  
     .veterinary-services-section h2 {
-        font-size: 36px;
+      font-size: 36px;
     }
-    
+  
     .service-card h3 {
-        font-size: 20px;
+      font-size: 20px;
     }
-}
-
-/* Estilos para el modal de servicio veterinario */
-.veterinary-service-modal {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.veterinary-service-modal h2 {
-    color: #e01e1e;
-    margin-bottom: 20px;
-    font-size: 28px;
-    text-align: center;
-    border-bottom: 2px solid #e01e1e;
-    padding-bottom: 10px;
-    font-weight: 600;
-}
-
-.veterinary-service-modal p {
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.service-details {
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-.service-details h3 {
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.service-details ul {
-    list-style-type: disc;
-    padding-left: 20px;
-}
-
-.service-details li {
-    color: #666;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.service-pricing {
-    background-color: #f2f2f2;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-.service-pricing h3 {
-    color: #e01e1e;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.service-pricing p {
-    color: #333;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.veterinary-service-modal button {
-    display: block;
-    width: 220px;
-    margin: 10px auto 0;
-    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 102, 204, 0.3);
-}
-
-.veterinary-service-modal button:hover {
-    background: linear-gradient(135deg, #0052a3 0%, #003d7a 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 102, 204, 0.4);
-}
-
-/* Estilos para el modal de reserva */
-.reservation-modal {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.reservation-modal h2 {
-    color: #e01e1e;
-    margin-bottom: 20px;
-    font-size: 28px;
-    text-align: center;
-    border-bottom: 2px solid #e01e1e;
-    padding-bottom: 10px;
-    font-weight: 600;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.form-group input, 
-.form-group select, 
-.form-group textarea {
+  }
+  
+  /* Estilos para el modal de servicio veterinario */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
     width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-.form-group input:focus, 
-.form-group select:focus, 
-.form-group textarea:focus {
-    border-color: #0066cc;
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
-    outline: none;
-}
-
-.form-actions {
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: #ffffff;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: modalopen 0.3s;
+  }
+  
+  @keyframes modalopen {
+    from {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    color: #e01e1e;
+    font-size: 24px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.primary-btn,
-.secondary-btn {
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 16px;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.primary-btn {
-    background-color: #e01e1e;
-    color: white;
-    border: none;
-    box-shadow: 0 4px 8px rgba(224, 30, 30, 0.2);
-}
-
-.primary-btn:hover {
-    background-color: #b51818;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(224, 30, 30, 0.3);
-}
-
-.secondary-btn {
-    background-color: #f2f2f2;
+  }
+  
+  .close:hover {
     color: #333;
-    border: 1px solid #ddd;
-}
-
-.secondary-btn:hover {
-    background-color: #e6e6e6;
-    transform: translateY(-3px);
-}
-
-#reservation-message {
-    margin: 15px 0;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
+  }
+  
+  /* Detalles del servicio en modal */
+  .service-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+  }
+  
+  .detail-item i {
+    color: #3dd41f;
+  }
+  
+  /* Formulario */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
     font-weight: 500;
-}
-
-#reservation-message.success {
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  /* Alertas */
+  .alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .success-message {
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
-}
-
-#reservation-message.error {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+  
+  .error-message {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
-}
-
-/* Estilos para la sección de ubicación */
-.vet-location-container {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+  
+  .error-input {
+    border-color: #dc3545 !important;
+  }
+  
+  /* Estilos para la sección de ubicación */
+  .vet-location-container {
     max-width: 1200px;
     margin: 40px auto 0;
     padding: 0 20px;
-}
-
-.vet-location-container h3 {
-    font-family: 'Blueberry', sans-serif;
+  }
+  
+  .vet-location-container h3 {
+    font-family: "Blueberry", sans-serif;
     text-align: center;
     color: #e01e1e;
     margin-bottom: 30px;
     font-size: 32px;
     font-weight: 600;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.vet-location-container .card {
+  }
+  
+  .vet-location-container .card {
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.vet-location-container .card-header {
+  }
+  
+  .vet-location-container .card-header {
     background-color: #138105 !important;
     padding: 15px 20px;
     font-size: 18px;
     font-weight: 600;
-}
-
-.vet-location-container .card-body {
+  }
+  
+  .vet-location-container .card-body {
     padding: 25px;
-}
-
-.vet-location-container p {
+  }
+  
+  .vet-location-container p {
     font-size: 16px;
     margin-bottom: 15px;
     color: #333;
-}
-
-.vet-location-container .map-container {
+  }
+  
+  .vet-location-container .map-container {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     height: 300px;
-}
-
-.vet-location-container iframe {
+  }
+  
+  .vet-location-container iframe {
     border-radius: 8px;
-}
-
-.vet-location-container .btn-outline-secondary {
+  }
+  
+  .vet-location-container .btn-outline-secondary {
     color: #1e52e0;
     border-color: #481ee0;
     transition: all 0.3s ease;
-}
-
-.vet-location-container .btn-outline-secondary:hover {
+  }
+  
+  .vet-location-container .btn-outline-secondary:hover {
     background-color: #2b1ee0;
     color: white;
-}
+  }
+  
+  

@@ -17,7 +17,6 @@
 </head>
 <body>
     {% include 'menu.html' %}  <!-- Incluir el menú -->
-    {% include 'modals.html' %}
     
    
 <main>
@@ -217,59 +216,113 @@
         </div>
     </section>
 
-    <!-- Modal de Reserva de Cita -->
+    <!-- Modal de información de servicio veterinario -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('infoModal')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">Información del Servicio</h2>
+            </div>
+            <div class="modal-body">
+                <div class="service-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <p class="modal-description"></p>
+                <div class="service-details">
+                    <div class="detail-item">
+                        <i class="fas fa-tag"></i>
+                        <span class="modal-price"></span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span class="modal-duration"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('infoModal')">Cerrar</button>
+                <button class="btn btn-primary" id="reserve-from-info">Reservar Cita</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de reserva de servicio veterinario -->
     <div id="reservationModal" class="modal">
-        <div class="modal-content reservation-modal">
+        <div class="modal-content">
             <span class="close" onclick="closeModal('reservationModal')">&times;</span>
-            <h2>Reservar Cita <span id="service-type"></span></h2>
-            <form id="reservation-form">
-                <input type="hidden" id="service-input" name="service">
-                <input type="hidden" id="service-id-input" name="serviceId">
-                
-                <div class="form-group">
-                    <label for="pet-owner">Nombre del Propietario:</label>
-                    <input type="text" id="pet-owner" name="petOwner" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pet-name">Nombre de la Mascota:</label>
-                    <input type="text" id="pet-name" name="petName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pet-type">Tipo de Mascota:</label>
-                    <select id="pet-type" name="petType" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="dog">Perro</option>
-                        <option value="cat">Gato</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="appointment-date">Fecha de la Cita:</label>
-                    <input type="date" id="appointment-date" name="appointmentDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="appointment-time">Hora de la Cita:</label>
-                    <select id="appointment-time" name="appointmentTime" required>
-                        <option value="">Seleccionar...</option>
-                        <!-- Las horas se cargarán dinámicamente con JavaScript -->
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="notes">Notas adicionales:</label>
-                    <textarea id="notes" name="notes" rows="3"></textarea>
-                </div>
-                
-                <div id="reservation-message" style="display: none;"></div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn">Confirmar Reserva</button>
-                    <button type="button" class="secondary-btn" onclick="closeModal('reservationModal')">Cancelar</button>
-                </div>
-            </form>
+            <div class="modal-header">
+                <h2>Reservar Cita <span id="service-type"></span></h2>
+            </div>
+            <div class="modal-body">
+                <form id="reservation-form">
+                    <!-- Campos ocultos -->
+                    <input type="hidden" id="service-input" name="service">
+                    <input type="hidden" id="service-id-input" name="serviceId">
+                    
+                    <!-- Información del propietario -->
+                    <div class="form-section">
+                        <h3>Información del Propietario</h3>
+                        <div class="form-group">
+                            <label for="petOwner">Nombre completo *</label>
+                            <input type="text" id="petOwner" name="petOwner" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ownerEmail">Correo electrónico *</label>
+                            <input type="email" id="ownerEmail" name="ownerEmail" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ownerPhone">Teléfono *</label>
+                            <input type="tel" id="ownerPhone" name="ownerPhone" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de la mascota -->
+                    <div class="form-section">
+                        <h3>Información de la Mascota</h3>
+                        <div class="form-group">
+                            <label for="petName">Nombre de la mascota *</label>
+                            <input type="text" id="petName" name="petName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="petType">Tipo de mascota *</label>
+                            <select id="petType" name="petType" class="form-control" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Perro">Perro</option>
+                                <option value="Gato">Gato</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de la cita -->
+                    <div class="form-section">
+                        <h3>Detalles de la Cita</h3>
+                        <div class="form-group">
+                            <label for="appointment-date">Fecha *</label>
+                            <input type="date" id="appointment-date" name="appointmentDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment-time">Hora *</label>
+                            <select id="appointment-time" name="appointmentTime" class="form-control" required>
+                                <option value="">Seleccionar...</option>
+                                <!-- Las horas disponibles se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notas adicionales</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Síntomas, preocupaciones o información adicional..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Mensaje de estado -->
+                    <div id="reservation-message" class="alert" style="display: none;"></div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('reservationModal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     
@@ -293,3 +346,4 @@
 <script src="https://kit.fontawesome.com/6be5f6dc99.js" crossorigin="anonymous" defer></script>
 </body>
 </html>
+
