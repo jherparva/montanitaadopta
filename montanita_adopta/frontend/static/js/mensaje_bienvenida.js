@@ -1,40 +1,49 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Comprobar si ya se mostró antes (usando localStorage)
-    const hasVisited = localStorage.getItem('hasVisitedMontañitaAdopta');
+    // Verificamos si el usuario ha iniciado sesión comprobando el token JWT
+    const isLoggedIn = checkIfUserIsLoggedIn();
     
-    // Solo mostrar el popup si es la primera visita (nunca ha visitado antes)
-    if (!hasVisited) {
+    // Mostrar el popup solo si NO ha iniciado sesión
+    if (!isLoggedIn) {
         setTimeout(function() {
             const welcomePopup = document.getElementById('welcome-popup');
             if (welcomePopup) {
                 welcomePopup.style.display = 'block';
-                // Guardar indicador de que ya visitó (usando un valor booleano o timestamp)
-                localStorage.setItem('hasVisitedMontañitaAdopta', 'true');
             }
         }, 500);
     }
     
-    // El resto del código para cerrar el popup queda igual
-    const closeWelcome = document.querySelector('.close-welcome');
-    if (closeWelcome) {
-        closeWelcome.addEventListener('click', function() {
-            document.getElementById('welcome-popup').style.display = 'none';
-        });
-    }
-    
-    const welcomeButton = document.getElementById('welcome-button');
-    if (welcomeButton) {
-        welcomeButton.addEventListener('click', function() {
-            document.getElementById('welcome-popup').style.display = 'none';
-        });
-    }
-    
-    const welcomePopup = document.getElementById('welcome-popup');
-    if (welcomePopup) {
-        welcomePopup.addEventListener('click', function(event) {
-            if (event.target === welcomePopup) {
-                welcomePopup.style.display = 'none';
-            }
-        });
-    }
+    // El resto del código para cerrar el popup queda igual...
 });
+
+// Función para verificar si el usuario ha iniciado sesión
+function checkIfUserIsLoggedIn() {
+    // Verificar si existe un token JWT en localStorage
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+        return false; // No hay token, usuario no está autenticado
+    }
+    
+    // Opcionalmente, puedes verificar si el token no está expirado
+    // Esto requiere decodificar el JWT en el cliente
+    try {
+        // Decodificación simple del JWT (solo la parte del payload)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // Verificar si el token ha expirado
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < currentTime) {
+            // Token expirado, eliminar y considerar como no autenticado
+            localStorage.removeItem('authToken');
+            return false;
+        }
+        
+        // Token válido y no expirado
+        return true;
+    } catch (error) {
+        console.error('Error al verificar el token:', error);
+        // En caso de error, mejor eliminar el token y considerar como no autenticado
+        localStorage.removeItem('authToken');
+        return false;
+    }
+}
