@@ -8,12 +8,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const welcomePopup = document.getElementById('welcome-popup');
             if (welcomePopup) {
                 welcomePopup.style.display = 'block';
+                
+                // Configurar los controladores de eventos DESPUÉS de que el modal sea visible
+                setupModalEventListeners();
             }
         }, 500);
     }
-    
-    // El resto del código para cerrar el popup queda igual...
 });
+
+// Función para configurar todos los controladores de eventos del modal
+function setupModalEventListeners() {
+    // Para el botón de cerrar (X)
+    const closeWelcome = document.querySelector('.close-welcome');
+    if (closeWelcome) {
+        closeWelcome.addEventListener('click', function() {
+            console.log('Botón cerrar clickeado');
+            const modal = document.getElementById('welcome-popup');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Para el botón "Empezar"
+    const welcomeButton = document.getElementById('welcome-button');
+    if (welcomeButton) {
+        welcomeButton.addEventListener('click', function() {
+            console.log('Botón empezar clickeado');
+            const modal = document.getElementById('welcome-popup');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Para cerrar al hacer clic fuera del modal
+    const welcomePopup = document.getElementById('welcome-popup');
+    if (welcomePopup) {
+        welcomePopup.addEventListener('click', function(event) {
+            if (event.target === welcomePopup) {
+                console.log('Fondo del modal clickeado');
+                welcomePopup.style.display = 'none';
+            }
+        });
+    }
+}
 
 // Función para verificar si el usuario ha iniciado sesión
 function checkIfUserIsLoggedIn() {
