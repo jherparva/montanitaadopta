@@ -415,84 +415,71 @@ async def update_profile_photo(
     db: Session = Depends(get_db)
 ):
     try:
-        # Validación básica
+        # Validación básica del tipo de archivo
         if not photo.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
         
-        # Leer contenido del archivo con límite de tamaño (5MB)
+        # Leer contenido con límite de 5MB
         content = await photo.read(5 * 1024 * 1024)
         if len(content) >= 5 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
         
-        # Usar BytesIO para manipular la imagen en memoria
+        # Procesar imagen en memoria
         image_bytes = io.BytesIO(content)
         try:
             image = Image.open(image_bytes)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
         
-        # Redimensionar la imagen si es necesario
+        # Redimensionar si excede resolución máxima
         max_resolution = 800
         width, height = image.size
         if width > max_resolution or height > max_resolution:
             ratio = min(max_resolution / width, max_resolution / height)
-            new_width = int(width * ratio)
-            new_height = int(height * ratio)
-            image = image.resize((new_width, new_height), Image.LANCZOS)
+            new_size = (int(width * ratio), int(height * ratio))
+            image = image.resize(new_size, Image.LANCZOS)
         
-        # Generar nombre de archivo único
+        # Determinar extensión segura
         file_extension = photo.filename.split('.')[-1].lower()
         if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
-            file_extension = 'jpg'  # Formato por defecto
+            file_extension = 'jpg'  # Por defecto
         
+        # Generar nombre único
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # Determinar la ruta base del proyecto
-        # En Render, podemos usar una ruta relativa o una variable de entorno
-        base_dir = os.environ.get('PROJECT_ROOT', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
-        # Directorio para archivos estáticos públicos (frontend)
-        static_dir = os.path.join(base_dir, "frontend", "static", "profile_photos")
-        
-        # Si no existe la estructura de carpetas frontend/static, usar la carpeta static en la raíz
-        if not os.path.exists(os.path.join(base_dir, "frontend")):
-            static_dir = os.path.join(base_dir, "static", "profile_photos")
-        
-        print(f"Directorio de almacenamiento: {static_dir}")
-        
-        # Crear directorio si no existe
+        # Ruta base real del proyecto
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        static_dir = os.path.join(base_dir, "..", "static", "profile_photos")
         os.makedirs(static_dir, exist_ok=True)
-        
-        # Ruta completa del archivo
+
+        # Ruta completa de guardado
         filepath = os.path.join(static_dir, filename)
         
-        # Guardar la imagen optimizada
+        # Guardar imagen
         image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
         image.save(filepath, format=image_format, optimize=True, quality=85)
         
-        # URL pública para la imagen (relativa al dominio)
+        # URL pública
         public_url = f"/static/profile_photos/{filename}"
         
-        # Actualizar en la base de datos
+        # Actualizar en base de datos
         user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
         if user:
-            # Si había una foto anterior, intentar eliminarla
+            # Eliminar foto anterior si no es la predeterminada
             if user.foto_perfil and not user.foto_perfil.startswith("/static/imagenes/default-profile"):
-                # Construir la ruta completa a la foto anterior
-                old_photo_filename = os.path.basename(user.foto_perfil)
-                old_photo_path = os.path.join(static_dir, old_photo_filename)
-                
-                if os.path.exists(old_photo_path):
+                old_filename = os.path.basename(user.foto_perfil)
+                old_filepath = os.path.join(static_dir, old_filename)
+                if os.path.exists(old_filepath):
                     try:
-                        os.remove(old_photo_path)
-                        print(f"Foto anterior eliminada: {old_photo_path}")
+                        os.remove(old_filepath)
+                        print(f"Foto anterior eliminada: {old_filepath}")
                     except Exception as e:
                         print(f"Error al eliminar foto anterior: {str(e)}")
             
             user.foto_perfil = public_url
             db.commit()
         
-        # Devolver la URL completa para uso inmediato
+        # URL completa
         base_url = "https://montanitaadopta.onrender.com"
         full_url = f"{base_url}{public_url}"
         
@@ -500,11 +487,11 @@ async def update_profile_photo(
         print(f"URL pública: {full_url}")
         
         return {
-            "success": True, 
+            "success": True,
             "photoUrl": full_url,
             "message": "Foto de perfil actualizada exitosamente"
         }
-    
+
     except HTTPException as http_ex:
         raise http_ex
     except Exception as e:
@@ -512,4 +499,3 @@ async def update_profile_photo(
         import traceback
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
-
