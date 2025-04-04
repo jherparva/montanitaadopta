@@ -1,4 +1,4 @@
-// Script para manejar el cambio de foto de perfil
+// Script mejorado para manejar el cambio de foto de perfil
 document.addEventListener("DOMContentLoaded", () => {
   // Referencias a elementos del DOM
   const photoModal = document.getElementById("photoModal")
@@ -144,11 +144,14 @@ document.addEventListener("DOMContentLoaded", () => {
         body: formData,
       })
 
+      // Verificar si la respuesta es exitosa
       if (!response.ok) {
         const errorData = await response.json()
+        console.error("Error en la respuesta:", response.status, errorData)
         throw new Error(errorData.detail || "Error al actualizar la foto de perfil")
       }
 
+      // Procesar la respuesta
       const data = await response.json()
       console.log("Respuesta del servidor:", data)
 
@@ -161,10 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Actualizar la interfaz de usuario
         if (mainProfilePhoto) {
           mainProfilePhoto.src = photoUrl
+          // Forzar recarga de la imagen para evitar caché
+          mainProfilePhoto.src = photoUrl + "?t=" + new Date().getTime()
         }
 
         if (currentProfilePhoto) {
           currentProfilePhoto.src = photoUrl
+          // Forzar recarga de la imagen para evitar caché
+          currentProfilePhoto.src = photoUrl + "?t=" + new Date().getTime()
         }
 
         // Actualizar localStorage
@@ -220,12 +227,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (storedUserData.foto_perfil) {
-        console.log("Cargando foto de perfil desde localStorage")
+        console.log("Cargando foto de perfil desde localStorage:", storedUserData.foto_perfil)
         if (mainProfilePhoto) {
-          mainProfilePhoto.src = storedUserData.foto_perfil
+          // Añadir parámetro de tiempo para evitar caché
+          mainProfilePhoto.src = storedUserData.foto_perfil + "?t=" + new Date().getTime()
         }
         if (currentProfilePhoto) {
-          currentProfilePhoto.src = storedUserData.foto_perfil
+          // Añadir parámetro de tiempo para evitar caché
+          currentProfilePhoto.src = storedUserData.foto_perfil + "?t=" + new Date().getTime()
         }
       }
 
@@ -275,11 +284,13 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("URL de foto de perfil del servidor:", photoUrl)
 
           if (mainProfilePhoto) {
-            mainProfilePhoto.src = photoUrl
+            // Añadir parámetro de tiempo para evitar caché
+            mainProfilePhoto.src = photoUrl + "?t=" + new Date().getTime()
           }
 
           if (currentProfilePhoto) {
-            currentProfilePhoto.src = photoUrl
+            // Añadir parámetro de tiempo para evitar caché
+            currentProfilePhoto.src = photoUrl + "?t=" + new Date().getTime()
           }
 
           // Actualizar en localStorage

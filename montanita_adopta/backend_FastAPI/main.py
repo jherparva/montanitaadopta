@@ -70,11 +70,20 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Crear directorio para fotos de perfil si no existe
-PROFILE_PHOTOS_DIR = "static/profile_photos"
+PROFILE_PHOTOS_DIR = os.path.join(BASE_DIR, "static", "profile_photos")
 os.makedirs(PROFILE_PHOTOS_DIR, exist_ok=True)
+print(f"📂 Directorio de fotos de perfil creado en: {PROFILE_PHOTOS_DIR}")
 
-# Montar directorio específico para fotos de perfil
+# Montar directorio específico para fotos de perfil con acceso público
 app.mount("/static/profile_photos", StaticFiles(directory=PROFILE_PHOTOS_DIR), name="profile_photos")
+
+# Asegurar que el directorio tenga permisos adecuados
+try:
+    import stat
+    os.chmod(PROFILE_PHOTOS_DIR, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
+    print(f"✅ Permisos establecidos para: {PROFILE_PHOTOS_DIR}")
+except Exception as e:
+    print(f"⚠️ No se pudieron establecer permisos: {str(e)}")
 
 # Mensaje de inicio
 print("⚡ Servidor iniciado correctamente!")

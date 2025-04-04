@@ -428,6 +428,7 @@ async def update_profile_photo(
         image_bytes = io.BytesIO(content)
         try:
             image = Image.open(image_bytes)
+            print(f"Imagen cargada correctamente: {image.format}, tamaño: {image.size}")
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
         
@@ -438,6 +439,7 @@ async def update_profile_photo(
             ratio = min(max_resolution / width, max_resolution / height)
             new_size = (int(width * ratio), int(height * ratio))
             image = image.resize(new_size, Image.LANCZOS)
+            print(f"Imagen redimensionada a: {new_size}")
         
         # Determinar extensión segura
         file_extension = photo.filename.split('.')[-1].lower()
@@ -447,10 +449,22 @@ async def update_profile_photo(
         # Generar nombre único
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # Ruta base real del proyecto
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        static_dir = os.path.join(base_dir, "..", "static", "profile_photos")
+        # IMPORTANTE: Usar ruta absoluta desde la raíz del proyecto
+        # Obtener la ruta raíz del proyecto (2 niveles arriba de auth.py)
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        static_dir = os.path.join(base_dir, "static", "profile_photos")
+        
+        # Verificar y crear el directorio si no existe
         os.makedirs(static_dir, exist_ok=True)
+        print(f"Directorio para fotos de perfil: {static_dir}")
+        
+        # Verificar permisos de escritura
+        if not os.access(static_dir, os.W_OK):
+            print(f"¡ADVERTENCIA! No hay permisos de escritura en: {static_dir}")
+            # Intentar con directorio alternativo
+            static_dir = "/tmp/profile_photos"
+            os.makedirs(static_dir, exist_ok=True)
+            print(f"Usando directorio alternativo: {static_dir}")
 
         # Ruta completa de guardado
         filepath = os.path.join(static_dir, filename)
@@ -458,33 +472,37 @@ async def update_profile_photo(
         # Guardar imagen
         image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
         image.save(filepath, format=image_format, optimize=True, quality=85)
+        print(f"Imagen guardada en: {filepath}")
         
-        # URL pública
+        # Verificar que el archivo se haya guardado correctamente
+        if not os.path.exists(filepath):
+            raise HTTPException(status_code=500, detail="No se pudo guardar la imagen en el servidor")
+        
+        # URL pública - IMPORTANTE: Asegurarse que coincida con la configuración en main.py
         public_url = f"/static/profile_photos/{filename}"
         
         # Actualizar en base de datos
         user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
         if user:
             # Eliminar foto anterior si no es la predeterminada
-            if user.foto_perfil and not user.foto_perfil.startswith("/static/imagenes/default-profile"):
-                old_filename = os.path.basename(user.foto_perfil)
-                old_filepath = os.path.join(static_dir, old_filename)
-                if os.path.exists(old_filepath):
-                    try:
+            if user.foto_perfil and not user.foto_perfil.endswith("default-profile.webp"):
+                try:
+                    old_filename = os.path.basename(user.foto_perfil)
+                    old_filepath = os.path.join(static_dir, old_filename)
+                    if os.path.exists(old_filepath):
                         os.remove(old_filepath)
                         print(f"Foto anterior eliminada: {old_filepath}")
-                    except Exception as e:
-                        print(f"Error al eliminar foto anterior: {str(e)}")
+                except Exception as e:
+                    print(f"Error al eliminar foto anterior: {str(e)}")
             
+            # Actualizar la URL en la base de datos
             user.foto_perfil = public_url
             db.commit()
+            print(f"Base de datos actualizada para usuario {user.id}, nueva foto: {public_url}")
         
-        # URL completa
+        # URL completa para devolver al cliente
         base_url = "https://montanitaadopta.onrender.com"
         full_url = f"{base_url}{public_url}"
-        
-        print(f"Foto guardada en: {filepath}")
-        print(f"URL pública: {full_url}")
         
         return {
             "success": True,
@@ -493,9 +511,11 @@ async def update_profile_photo(
         }
 
     except HTTPException as http_ex:
+        print(f"Error HTTP: {http_ex.detail}")
         raise http_ex
     except Exception as e:
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
+
