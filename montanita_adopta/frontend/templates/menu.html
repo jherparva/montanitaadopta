@@ -43,12 +43,8 @@
             <li id="user-menu" class="has-submenu" style="display: none;">
                 <a href="#" id="user-name" class="menu-link user-profile-link">
                     <div class="profile-photo-container">
-                        <img id="profile-photo" src="/static/imagenes/default-profile.webp" alt="Foto de perfil" class="profile-photo">
-                        <button onclick="openPhotoProfileModal()" class="change-photo-btn">
-                          <i class="fa-solid fa-camera"></i>
-                        </button>
+                        <img id="profile-photo" src="/static/imagenes/default-profile.webp" alt="Foto de perfil">
                     </div>
-                      
                     <span id="username-text"></span>
                     <i class="fa-solid fa-chevron-down"></i>
                 </a>
@@ -69,4 +65,34 @@
     </nav>
 </div>
 
+<!-- Modal para cambiar la foto de perfil (con las clases corregidas) -->
+<div id="photoModal" class="photo-profile-modal">
+    <div class="photo-modal-content">
+        <div class="photo-modal-header">
+            <h2 data-translate="Cambiar foto de perfil">Cambiar foto de perfil</h2>
+            <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+        </div>
+        <div class="photo-upload-container">
+            <div class="current-photo">
+                <img id="current-profile-photo" src="/static/imagenes/default-profile.webp" alt="Foto actual" data-translate-alt="Foto actual">
+            </div>
+            <form id="profile-photo-form" enctype="multipart/form-data">
+                <div class="file-input-container">
+                    <label for="profile-photo-upload" class="file-upload-button" data-translate="Seleccionar imagen">
+                        <i class="fa-solid fa-upload"></i> Seleccionar imagen
+                    </label>
+                    <input type="file" id="profile-photo-upload" name="photo" accept="image/*">
+                </div>
+                <div class="preview-container">
+                    <img id="photo-preview" src="#" alt="Vista previa" data-translate-alt="Vista previa" style="display: none;">
+                </div>
+                <button type="submit" class="upload-button" data-translate="Guardar cambios">
+                    <i class="fa-solid fa-save"></i> Guardar cambios
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/foto_perfil.js') }}"></script>
