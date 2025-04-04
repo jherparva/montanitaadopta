@@ -449,34 +449,62 @@ async def update_profile_photo(
         # Generar nombre único
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # IMPORTANTE: Usar ruta absoluta desde la raíz del proyecto
-        # Obtener la ruta raíz del proyecto (2 niveles arriba de auth.py)
+        # IMPORTANTE: Probar múltiples ubicaciones para guardar la imagen
+        # Opción 1: Directorio relativo a la raíz del proyecto
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         static_dir = os.path.join(base_dir, "static", "profile_photos")
         
-        # Verificar y crear el directorio si no existe
-        os.makedirs(static_dir, exist_ok=True)
-        print(f"Directorio para fotos de perfil: {static_dir}")
+        # Opción 2: Directorio temporal
+        temp_dir = "/tmp/profile_photos"
         
-        # Verificar permisos de escritura
-        if not os.access(static_dir, os.W_OK):
-            print(f"¡ADVERTENCIA! No hay permisos de escritura en: {static_dir}")
-            # Intentar con directorio alternativo
-            static_dir = "/tmp/profile_photos"
-            os.makedirs(static_dir, exist_ok=True)
-            print(f"Usando directorio alternativo: {static_dir}")
-
-        # Ruta completa de guardado
-        filepath = os.path.join(static_dir, filename)
+        # Opción 3: Directorio relativo al script actual
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        relative_dir = os.path.join(current_dir, "..", "..", "static", "profile_photos")
         
-        # Guardar imagen
-        image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
-        image.save(filepath, format=image_format, optimize=True, quality=85)
-        print(f"Imagen guardada en: {filepath}")
+        # Lista de directorios a probar
+        directories_to_try = [
+            static_dir,
+            temp_dir,
+            relative_dir,
+            "/app/static/profile_photos",  # Para entornos Docker/Heroku
+            os.path.join(os.getcwd(), "static", "profile_photos")  # Directorio de trabajo actual
+        ]
         
-        # Verificar que el archivo se haya guardado correctamente
-        if not os.path.exists(filepath):
-            raise HTTPException(status_code=500, detail="No se pudo guardar la imagen en el servidor")
+        # Intentar guardar en cada directorio hasta que uno funcione
+        saved_successfully = False
+        used_directory = None
+        filepath = None
+        
+        for directory in directories_to_try:
+            try:
+                os.makedirs(directory, exist_ok=True)
+                print(f"Intentando guardar en: {directory}")
+                
+                # Verificar permisos de escritura
+                if not os.access(directory, os.W_OK):
+                    print(f"¡ADVERTENCIA! No hay permisos de escritura en: {directory}")
+                    continue
+                
+                # Ruta completa de guardado
+                filepath = os.path.join(directory, filename)
+                
+                # Guardar imagen
+                image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
+                image.save(filepath, format=image_format, optimize=True, quality=85)
+                
+                # Verificar que el archivo se haya guardado correctamente
+                if os.path.exists(filepath):
+                    print(f"✅ Imagen guardada exitosamente en: {filepath}")
+                    saved_successfully = True
+                    used_directory = directory
+                    break
+                else:
+                    print(f"❌ No se pudo verificar que la imagen se guardó en: {filepath}")
+            except Exception as e:
+                print(f"❌ Error al guardar en {directory}: {str(e)}")
+        
+        if not saved_successfully:
+            raise HTTPException(status_code=500, detail="No se pudo guardar la imagen en ningún directorio")
         
         # URL pública - IMPORTANTE: Asegurarse que coincida con la configuración en main.py
         public_url = f"/static/profile_photos/{filename}"
@@ -488,7 +516,7 @@ async def update_profile_photo(
             if user.foto_perfil and not user.foto_perfil.endswith("default-profile.webp"):
                 try:
                     old_filename = os.path.basename(user.foto_perfil)
-                    old_filepath = os.path.join(static_dir, old_filename)
+                    old_filepath = os.path.join(used_directory, old_filename)
                     if os.path.exists(old_filepath):
                         os.remove(old_filepath)
                         print(f"Foto anterior eliminada: {old_filepath}")
@@ -507,7 +535,8 @@ async def update_profile_photo(
         return {
             "success": True,
             "photoUrl": full_url,
-            "message": "Foto de perfil actualizada exitosamente"
+            "message": "Foto de perfil actualizada exitosamente",
+            "savedIn": used_directory  # Información adicional para depuración
         }
 
     except HTTPException as http_ex:
