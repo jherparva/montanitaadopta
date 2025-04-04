@@ -216,39 +216,35 @@ def historias_exito():
     return render_template('historias_exito.html', usuario_nombre=usuario_nombre, usuario_foto=usuario_foto)
 
 # Ruta para servir imágenes de perfil desde el backend
-@app.route('/proxy/profile_photos/<path:filename>')
-def proxy_profile_photo(filename):
-    """
-    Proxy para obtener imágenes de perfil desde el backend
-    """
-    try:
-        # Construir la URL completa al backend
-        backend_url = f"https://montanitaadopta.onrender.com/static/profile_photos/{filename}"
+# # Ruta para servir imágenes de perfil desde el backend
+# @app.route('/proxy/profile_photos/<path:filename>')
+# def proxy_profile_photo(filename):
+#     """
+#     Proxy para obtener imágenes de perfil desde el backend
+#     """
+#     try:
+#         # Construir la URL completa al backend
+#         backend_url = f"https://montanitaadopta.onrender.com/static/profile_photos/{filename}"
         
-        # Hacer una solicitud al backend para obtener la imagen
-        response = requests.get(backend_url, stream=True)
+#         # Hacer una solicitud al backend para obtener la imagen
+#         response = requests.get(backend_url, stream=True)
         
-        if response.status_code == 200:
-            # Crear directorio temporal si no existe
-            os.makedirs('temp_images', exist_ok=True)
+#         if response.status_code == 200:
+#             # Crear directorio temporal si no existe
+#             os.makedirs('temp_images', exist_ok=True)
             
-            # Guardar la imagen temporalmente
-            temp_path = os.path.join('temp_images', filename)
-            with open(temp_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
+#             # Guardar la imagen temporalmente
+#             temp_path = os.path.join('temp_images', filename)
+#             with open(temp_path, 'wb') as f:
+#                 for chunk in response.iter_content(chunk_size=8192):
+#                     f.write(chunk)
             
-            # Servir la imagen desde el directorio temporal
-            return send_from_directory('temp_images', filename, 
-                                      mimetype=response.headers.get('Content-Type', 'image/jpeg'))
-        else:
-            # Si no se encuentra la imagen, devolver una imagen por defecto
-            return send_from_directory('static', 'default_profile.jpg')
-    except Exception as e:
-        print(f"Error al obtener imagen de perfil: {e}")
-        return send_from_directory('static', 'default_profile.jpg')
-
-# Esta parte solo se ejecutará durante el desarrollo local
-if __name__ == '__main__':
-    # Usar 0.0.0.0 para permitir conexiones desde cualquier origen
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+#             # Servir la imagen desde el directorio temporal
+#             return send_from_directory('temp_images', filename, 
+#                                       mimetype=response.headers.get('Content-Type', 'image/jpeg'))
+#         else:
+#             # Si no se encuentra la imagen, devolver una imagen por defecto
+#             return send_from_directory('static', 'default_profile.jpg')
+#     except Exception as e:
+#         print(f"Error al obtener imagen de perfil: {e}")
+#         return send_from_directory('static', 'default_profile.jpg')
