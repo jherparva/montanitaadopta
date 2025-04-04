@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/recuperar_contraseña.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/foto_perfil.css') }}">
     
     
 <!-- Modal para Login -->
@@ -196,8 +197,78 @@
     </div>
 </div>
 
+<!-- Modal para cambiar la foto de perfil (con las clases corregidas) -->
+<div id="photoProfileModal" class="modal">
+  <div class="modal-content photo-modal">
+    <div class="modal-header">
+      <h2>Cambiar foto de perfil</h2>
+      <span class="close" onclick="closePhotoProfileModal()">&times;</span>
+    </div>
+    
+    <div class="modal-body">
+      <div class="photo-preview-container">
+        <div class="current-photo">
+          <h4>Foto actual</h4>
+          <img id="currentProfilePhoto" src="/static/imagenes/default-profile.webp" alt="Foto actual de perfil">
+        </div>
+        <div class="new-photo">
+          <h4>Vista previa</h4>
+          <img id="newPhotoPreview" src="/static/imagenes/photo-placeholder.webp" alt="Vista previa de la nueva foto" class="photo-preview">
+          <div id="dragOverlay" class="drag-overlay">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Suelta la imagen aquí</span>
+          </div>
+        </div>
+      </div>
+      
+      <form id="profilePhotoForm" enctype="multipart/form-data">
+        <div class="file-upload-container">
+          <div class="upload-btn-wrapper">
+            <button class="btn-upload" type="button">
+              <i class="fa-solid fa-image"></i> Seleccionar imagen
+            </button>
+            <input type="file" id="photoFileInput" name="photo" accept="image/*"/>
+          </div>
+          <div class="drag-drop-info">
+            <p>También puedes arrastrar y soltar una imagen aquí</p>
+            <p class="file-requirements">Formatos: JPG, PNG, GIF (máx. 5MB)</p>
+          </div>
+        </div>
+        
+        <div id="uploadError" class="error-message"></div>
+        
+        <div class="crop-controls">
+          <button type="button" id="rotateLeftBtn" class="btn-icon">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button type="button" id="rotateRightBtn" class="btn-icon">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button type="button" id="zoomInBtn" class="btn-icon">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          </button>
+          <button type="button" id="zoomOutBtn" class="btn-icon">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+          </button>
+          <button type="button" id="resetBtn" class="btn-icon">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closePhotoProfileModal()">Cancelar</button>
+          <button type="submit" class="btn-save">
+            <i class="fa-solid fa-save"></i> Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://connect.facebook.net/en_US/sdk.js" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{{ url_for('static', filename='js/restablecer_contraseña.js') }}"></script>
+<script src="{{ url_for('static', filename='js/foto_perfil.js') }}"></script>

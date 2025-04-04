@@ -407,144 +407,219 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "nombre": user.nombre
     }
 
-# 🔹 ENDPOINT ACTUALIZADO PARA FOTOS DE PERFIL
-@router.post("/update-profile-photo")
-async def update_profile_photo(
-    photo: UploadFile = File(...), 
-    current_user: dict = Depends(verify_token), 
-    db: Session = Depends(get_db)
-):
+# Función mejorada para procesar imágenes
+async def process_image(image_bytes: bytes, max_resolution: int = 800) -> tuple:
+    """
+    Procesa una imagen: la redimensiona si es necesario y la optimiza.
+    Retorna la imagen procesada y su formato.
+    """
     try:
-        # Validación básica del tipo de archivo
-        if not photo.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
-        
-        # Leer contenido con límite de 5MB
-        content = await photo.read(5 * 1024 * 1024)
-        if len(content) >= 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB")
-        
-        # Procesar imagen en memoria
-        image_bytes = io.BytesIO(content)
-        try:
-            image = Image.open(image_bytes)
-            print(f"Imagen cargada correctamente: {image.format}, tamaño: {image.size}")
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"No se pudo procesar la imagen: {str(e)}")
-        
-        # Redimensionar si excede resolución máxima
-        max_resolution = 800
+        image = Image.open(io.BytesIO(image_bytes))
+         
+        # Crear un thumbnail para uso eficiente
         width, height = image.size
         if width > max_resolution or height > max_resolution:
             ratio = min(max_resolution / width, max_resolution / height)
             new_size = (int(width * ratio), int(height * ratio))
             image = image.resize(new_size, Image.LANCZOS)
-            print(f"Imagen redimensionada a: {new_size}")
+            logger.info(f"Imagen redimensionada a: {new_size}")
+         
+        # Obtener formato y convertir si es necesario
+        img_format = image.format if image.format else 'JPEG'
+         
+        # Si la imagen tiene canal alpha y no es PNG, convertir a RGB
+        if image.mode == 'RGBA' and img_format != 'PNG':
+            image = image.convert('RGB')
+         
+        # Crear buffer para la imagen procesada
+        buffer = io.BytesIO()
+         
+        # Guardar imagen optimizada en el buffer
+        save_format = 'JPEG' if img_format in ['JPEG', 'JPG'] else img_format
+        image.save(buffer, format=save_format, optimize=True, quality=85)
+        buffer.seek(0)
         
-        # Determinar extensión segura
-        file_extension = photo.filename.split('.')[-1].lower()
-        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
-            file_extension = 'jpg'  # Por defecto
-        
-        # Generar nombre único
-        filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        
-        # IMPORTANTE: Probar múltiples ubicaciones para guardar la imagen
-        # Opción 1: Directorio relativo a la raíz del proyecto
+        return buffer, save_format, new_size if 'new_size' in locals() else image.size
+    except Exception as e:
+        logger.error(f"Error procesando imagen: {str(e)}")
+        raise ValueError(f"No se pudo procesar la imagen: {str(e)}")
+
+# Función para guardar imágenes en la base de datos y administrar archivos
+async def update_user_profile_photo(
+    user_id: int, 
+    image_buffer: io.BytesIO, 
+    file_extension: str, 
+    db: Session,
+    background_tasks: BackgroundTasks
+):
+    """
+    Guarda la imagen de perfil del usuario y actualiza la base de datos.
+    Parámetros:
+    - user_id: ID del usuario
+    - image_buffer: Buffer con la imagen procesada
+    - file_extension: Extensión del archivo
+    - db: Sesión de base de datos
+    - background_tasks: Para tareas en segundo plano
+    """
+    from app.models.usuarios import UsuarioModel  # Importación local para evitar dependencias circulares
+    
+    # Generar nombre único para el archivo
+    filename = f"user_{user_id}_{uuid.uuid4().hex[:8]}.{file_extension.lower()}"
+    
+    # OPCIÓN 1: ALMACENAMIENTO LOCAL
+    try:
+        # Usar la ruta definida en main.py para consistencia
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        static_dir = os.path.join(base_dir, "static", "profile_photos")
+        profile_photos_dir = os.path.join(base_dir, "static", "profile_photos")
+        os.makedirs(profile_photos_dir, exist_ok=True)
         
-        # Opción 2: Directorio temporal
-        temp_dir = "/tmp/profile_photos"
+        filepath = os.path.join(profile_photos_dir, filename)
         
-        # Opción 3: Directorio relativo al script actual
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        relative_dir = os.path.join(current_dir, "..", "..", "static", "profile_photos")
+        # Guardar archivo
+        with open(filepath, "wb") as f:
+            f.write(image_buffer.getvalue())
         
-        # Lista de directorios a probar
-        directories_to_try = [
-            static_dir,
-            temp_dir,
-            relative_dir,
-            "/app/static/profile_photos",  # Para entornos Docker/Heroku
-            os.path.join(os.getcwd(), "static", "profile_photos")  # Directorio de trabajo actual
-        ]
-        
-        # Intentar guardar en cada directorio hasta que uno funcione
-        saved_successfully = False
-        used_directory = None
-        filepath = None
-        
-        for directory in directories_to_try:
-            try:
-                os.makedirs(directory, exist_ok=True)
-                print(f"Intentando guardar en: {directory}")
-                
-                # Verificar permisos de escritura
-                if not os.access(directory, os.W_OK):
-                    print(f"¡ADVERTENCIA! No hay permisos de escritura en: {directory}")
-                    continue
-                
-                # Ruta completa de guardado
-                filepath = os.path.join(directory, filename)
-                
-                # Guardar imagen
-                image_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else file_extension.upper()
-                image.save(filepath, format=image_format, optimize=True, quality=85)
-                
-                # Verificar que el archivo se haya guardado correctamente
-                if os.path.exists(filepath):
-                    print(f"✅ Imagen guardada exitosamente en: {filepath}")
-                    saved_successfully = True
-                    used_directory = directory
-                    break
-                else:
-                    print(f"❌ No se pudo verificar que la imagen se guardó en: {filepath}")
-            except Exception as e:
-                print(f"❌ Error al guardar en {directory}: {str(e)}")
-        
-        if not saved_successfully:
-            raise HTTPException(status_code=500, detail="No se pudo guardar la imagen en ningún directorio")
-        
-        # URL pública - IMPORTANTE: Asegurarse que coincida con la configuración en main.py
-        public_url = f"/static/profile_photos/{filename}"
-        
-        # Actualizar en base de datos
-        user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
-        if user:
-            # Eliminar foto anterior si no es la predeterminada
-            if user.foto_perfil and not user.foto_perfil.endswith("default-profile.webp"):
-                try:
-                    old_filename = os.path.basename(user.foto_perfil)
-                    old_filepath = os.path.join(used_directory, old_filename)
-                    if os.path.exists(old_filepath):
-                        os.remove(old_filepath)
-                        print(f"Foto anterior eliminada: {old_filepath}")
-                except Exception as e:
-                    print(f"Error al eliminar foto anterior: {str(e)}")
-            
-            # Actualizar la URL en la base de datos
-            user.foto_perfil = public_url
-            db.commit()
-            print(f"Base de datos actualizada para usuario {user.id}, nueva foto: {public_url}")
+        # URL relativa para guardar en BD
+        relative_url = f"/static/profile_photos/{filename}"
         
         # URL completa para devolver al cliente
         base_url = "https://montanitaadopta.onrender.com"
-        full_url = f"{base_url}{public_url}"
+        full_url = f"{base_url}{relative_url}"
+        
+        # OPCIÓN 2: SI USAMOS S3 (COMENTADO HASTA QUE SE IMPLEMENTE)
+        """
+        try:
+            # Subir a S3
+            s3_client.upload_fileobj(
+                image_buffer, 
+                BUCKET_NAME, 
+                f"profile_photos/{filename}",
+                ExtraArgs={'ContentType': f'image/{file_extension.lower()}'}
+            )
+            
+            # URL completa de S3
+            full_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/profile_photos/{filename}"
+            relative_url = full_url  # En S3, guardamos la URL completa
+            
+        except Exception as e:
+            logger.error(f"Error al subir imagen a S3: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error al guardar imagen en la nube: {str(e)}")
+        """
+        
+        # Actualizar en la base de datos y eliminar foto anterior
+        user = db.query(UsuarioModel).filter(UsuarioModel.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        # Programar eliminación de foto anterior en segundo plano
+        if user.foto_perfil and not user.foto_perfil.endswith("default-profile.webp"):
+            old_filepath = None
+            
+            # Si es almacenamiento local
+            if user.foto_perfil.startswith("/static/"):
+                old_filename = os.path.basename(user.foto_perfil)
+                old_filepath = os.path.join(profile_photos_dir, old_filename)
+            
+            # Si fuera S3 (para implementación futura)
+            """
+            elif user.foto_perfil.startswith("https://") and "s3.amazonaws.com" in user.foto_perfil:
+                old_key = user.foto_perfil.split(f"https://{BUCKET_NAME}.s3.amazonaws.com/")[1]
+                background_tasks.add_task(
+                    s3_client.delete_object,
+                    Bucket=BUCKET_NAME,
+                    Key=old_key
+                )
+            """
+            
+            # Eliminar archivo local en segundo plano
+            if old_filepath:
+                def delete_old_file(path):
+                    try:
+                        if os.path.exists(path):
+                            os.remove(path)
+                            logger.info(f"Foto anterior eliminada: {path}")
+                    except Exception as e:
+                        logger.error(f"Error al eliminar foto anterior: {str(e)}")
+                
+                background_tasks.add_task(delete_old_file, old_filepath)
+        
+        # Actualizar la URL en la base de datos
+        user.foto_perfil = relative_url
+        db.commit()
+        logger.info(f"Base de datos actualizada para usuario {user.id}, nueva foto: {relative_url}")
         
         return {
             "success": True,
             "photoUrl": full_url,
-            "message": "Foto de perfil actualizada exitosamente",
-            "savedIn": used_directory  # Información adicional para depuración
+            "message": "Foto de perfil actualizada exitosamente"
         }
+        
+    except Exception as e:
+        logger.error(f"Error al guardar imagen: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al guardar imagen: {str(e)}")
+
+@router.post("/update-profile-photo")
+async def update_profile_photo(
+    photo: UploadFile = File(...), 
+    current_user: dict = Depends(verify_token), 
+    db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    """
+    Endpoint para actualizar la foto de perfil del usuario.
+    """
+    try:
+        # Validación básica del tipo de archivo
+        if not photo.content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=400, 
+                detail={"success": False, "message": "Solo se permiten imágenes"}
+            )
+        
+        # Extraer extensión del archivo
+        file_extension = photo.filename.split('.')[-1].lower()
+        if file_extension not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+            file_extension = 'jpg'  # Por defecto usar jpg
+        
+        # Leer contenido con límite de 5MB
+        content = await photo.read(5 * 1024 * 1024)
+        if len(content) >= 5 * 1024 * 1024:
+            raise HTTPException(
+                status_code=400, 
+                detail={"success": False, "message": "El archivo es demasiado grande. Máximo 5MB"}
+            )
+        
+        # Procesar imagen
+        try:
+            image_buffer, image_format, image_size = await process_image(content)
+            logger.info(f"Imagen procesada: formato {image_format}, tamaño {image_size}")
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400,
+                detail={"success": False, "message": str(e)}
+            )
+        
+        # Guardar imagen y actualizar base de datos
+        result = await update_user_profile_photo(
+            user_id=current_user['sub'],
+            image_buffer=image_buffer,
+            file_extension=file_extension,
+            db=db,
+            background_tasks=background_tasks
+        )
+        
+        return result
 
     except HTTPException as http_ex:
-        print(f"Error HTTP: {http_ex.detail}")
+        # Re-lanzar excepciones HTTP ya formateadas
+        logger.error(f"Error HTTP en update_profile_photo: {http_ex.detail}")
         raise http_ex
     except Exception as e:
-        print(f"Error inesperado: {str(e)}")
+        # Capturar cualquier otra excepción no manejada
+        logger.error(f"Error inesperado en update_profile_photo: {str(e)}")
         import traceback
-        print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
-
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail={"success": False, "message": f"Error al procesar: {str(e)}"}
+        )
