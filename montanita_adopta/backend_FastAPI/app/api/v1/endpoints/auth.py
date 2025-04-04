@@ -1,7 +1,7 @@
 # Importaciones necesarias
 from pydantic import BaseModel, EmailStr
 from app.auth.gettoken import verify_token
-from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, Request, Response, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from authlib.integrations.starlette_client import OAuth
@@ -28,6 +28,7 @@ from app.schemas.usuarios import UsuarioCreate, Usuario, UsuarioUpdate, UsuarioR
 from app.schemas.contacto import ContactoCreate
 from app.models.adopcion import Adopcion
 from app.auth.gettoken import get_current_user
+
 
 
 router = APIRouter()
