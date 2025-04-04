@@ -447,9 +447,20 @@ async def update_profile_photo(
         
         filename = f"user_{current_user['sub']}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
-        # Crear directorios si no existen
-        # Directorio para archivos estáticos públicos
-        static_dir = "static/profile_photos"
+        # Determinar la ruta base del proyecto
+        # En Render, podemos usar una ruta relativa o una variable de entorno
+        base_dir = os.environ.get('PROJECT_ROOT', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        # Directorio para archivos estáticos públicos (frontend)
+        static_dir = os.path.join(base_dir, "frontend", "static", "profile_photos")
+        
+        # Si no existe la estructura de carpetas frontend/static, usar la carpeta static en la raíz
+        if not os.path.exists(os.path.join(base_dir, "frontend")):
+            static_dir = os.path.join(base_dir, "static", "profile_photos")
+        
+        print(f"Directorio de almacenamiento: {static_dir}")
+        
+        # Crear directorio si no existe
         os.makedirs(static_dir, exist_ok=True)
         
         # Ruta completa del archivo
@@ -466,11 +477,17 @@ async def update_profile_photo(
         user = db.query(UsuarioModel).filter(UsuarioModel.id == current_user['sub']).first()
         if user:
             # Si había una foto anterior, intentar eliminarla
-            if user.foto_perfil and os.path.exists(user.foto_perfil.lstrip('/')):
-                try:
-                    os.remove(user.foto_perfil.lstrip('/'))
-                except:
-                    pass  # Ignorar errores al eliminar
+            if user.foto_perfil and not user.foto_perfil.startswith("/static/imagenes/default-profile"):
+                # Construir la ruta completa a la foto anterior
+                old_photo_filename = os.path.basename(user.foto_perfil)
+                old_photo_path = os.path.join(static_dir, old_photo_filename)
+                
+                if os.path.exists(old_photo_path):
+                    try:
+                        os.remove(old_photo_path)
+                        print(f"Foto anterior eliminada: {old_photo_path}")
+                    except Exception as e:
+                        print(f"Error al eliminar foto anterior: {str(e)}")
             
             user.foto_perfil = public_url
             db.commit()
@@ -478,6 +495,9 @@ async def update_profile_photo(
         # Devolver la URL completa para uso inmediato
         base_url = "https://montanitaadopta.onrender.com"
         full_url = f"{base_url}{public_url}"
+        
+        print(f"Foto guardada en: {filepath}")
+        print(f"URL pública: {full_url}")
         
         return {
             "success": True, 
@@ -492,3 +512,4 @@ async def update_profile_photo(
         import traceback
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
+
